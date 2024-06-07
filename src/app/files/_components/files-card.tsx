@@ -23,10 +23,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Image from "next/image";
+
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useRouter } from "next/navigation";
 import { PreviewSheet } from "./preview-sheet";
 import { useState } from "react";
-import { Upload } from "lucide-react";
 
 const successImage = require("@/assets/successful-send.png");
 
@@ -60,7 +70,7 @@ const FormSchema = z
     }
   );
 
-export function SendCard() {
+export function FilesCard() {
   const [sendStatus, setSendStatus] = useState(false);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -91,31 +101,6 @@ export function SendCard() {
             <CardTitle>Upload files</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
-            <div className="grid grid-cols-3 gap-2">
-              <button>
-                <Image
-                  alt="Product image"
-                  className="aspect-square w-full rounded-md object-cover"
-                  height="84"
-                  src="/placeholder.svg"
-                  width="84"
-                />
-              </button>
-              <button>
-                <Image
-                  alt="Product image"
-                  className="aspect-square w-full rounded-md object-cover"
-                  height="84"
-                  src="/placeholder.svg"
-                  width="84"
-                />
-              </button>
-              <button className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed">
-                <Upload className="h-4 w-4 text-muted-foreground" />
-                <span className="sr-only">Upload</span>
-              </button>
-            </div>  
-
             <FormField
               control={form.control}
               name="receiversEmail"

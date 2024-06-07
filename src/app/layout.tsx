@@ -4,13 +4,13 @@ import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import DefaultPage from "./_components/default-page";
 import { Toaster } from "@/components/ui/toaster";
-import { ApplicationProvider } from "@/context";
+import { ApplicationProvider } from "@/context/files";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Nethersync",
-  description: "Share files with clients safely",
+  description: "Share files with clients",
 };
 
 export default function RootLayout({
@@ -21,14 +21,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-          <TooltipProvider>
-            <ApplicationProvider>
-              <>
-                <DefaultPage>{children}</DefaultPage>
-                <Toaster />
-              </>
-            </ApplicationProvider>
-          </TooltipProvider>
+        <TooltipProvider>
+          <ApplicationProvider>
+            <>
+              <DefaultPage>{children}</DefaultPage>
+              <Toaster />
+            </>
+          </ApplicationProvider>
+        </TooltipProvider>
       </body>
     </html>
   );
