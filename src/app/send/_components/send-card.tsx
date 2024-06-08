@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -29,6 +28,10 @@ import { useState } from "react";
 import { Upload, X } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import { APILLION_AUTH_SECRET, APILLON_BUCKET_UUID } from "@/client/config";
 
 const successImage = require("@/assets/successful-send.png");
 
@@ -85,18 +88,104 @@ export function SendCard() {
   });
   const { formState, watch } = form;
   const { isValid, isDirty, errors: formErrors } = formState;
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const queryClient = useQueryClient();
 
   const { toast } = useToast();
 
   const isPaid = watch("isPaid", false);
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log("submit form data: ", data);
-    toast({
-      description: "Your files have been sent.",
+  const uploadFilesAction = async (formData: z.infer<typeof FormSchema>) => {
+    const { files, sendersEmail } = formData;
+    const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/upload`;
+    const headers = {
+      Authorization: `${APILLION_AUTH_SECRET}`,
+      "Content-Type": "application/json",
+    };
+    const data = {
+      files: files.map((file) => ({
+        fileName: file.name,
+        path: `send/${sendersEmail}/${file.name}`,
+        contentType: file.type,
+      })),
+    };
+
+    const signedUrlResponse = await axios.post(url, data, {
+      headers,
     });
-    setSendStatus(true);
-  }
+
+    const { sessionUuid: uploadSessionId, files: filesSignedUrls } =
+      signedUrlResponse.data.data;
+
+    filesSignedUrls.map(async (signedItem: any, index: number) => {
+      const fileDataToUpload = files[index];
+      console.log("file path", fileDataToUpload);
+      // curl --location --request PUT "https://sync-to-ipfs-queue.s3.eu-west-1.amazonaws.com/STORAGE_sessions/73/3b6113bc-f265-4662-8cc5-ea86f06cc74b/My%20test%20file?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAQIMRRA6GJRL57L7G%2F20230215%2Feu-west-1%2Fs3%2Faws4_request&X-Amz-Date=20230215T114524Z&X-Amz-Expires=900&X-Amz-Signature=499367f6c6bff5be50686724475ac2fa6307b77b94fd1a25584c092fe74b0a58&X-Amz-SignedHeaders=host&x-id=PutObject" \
+      // --data-binary "My test content"
+      const response = await axios.put(signedItem.url, fileDataToUpload, {
+        // headers,
+        onUploadProgress: (progressEvent) => {
+          const progress = (progressEvent.loaded / progressEvent.total!) * 100;
+          setUploadProgress(progress);
+        },
+      });
+    });
+
+    return signedUrlResponse.data;
+  };
+
+  const storeMetadata = async (fileMetadata: any) => {
+    const response = await axios.post("/send/upload", fileMetadata);
+    return response.data;
+  };
+
+  const endUploadOfFiles = async (sessionId: string) => {
+    const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/upload/${sessionId}/end`;
+    console.log("usl", url);
+    const headers = {
+      Authorization: `${APILLION_AUTH_SECRET}`,
+      "Content-Type": "application/json",
+    };
+
+    const response = await axios.post(
+      url,
+      {},
+      {
+        headers,
+      }
+    );
+  };
+
+  const mutation = useMutation({ mutationFn: uploadFilesAction });
+
+  const onSubmit = (data: z.infer<typeof FormSchema>) => {
+    mutation.mutate(data, {
+      onSuccess: async (res: any) => {
+        const fileMetadata = {
+          files: res.data.files,
+          sessionId: res.data.sessionUuid,
+          sendersEmail: data.sendersEmail,
+          recipientEmail: data.receiversEmail,
+          isPaid: data.isPaid,
+          paymentAmount: data.paymentAmount,
+        };
+        await endUploadOfFiles(res.data.sessionUuid);
+        await storeMetadata(fileMetadata);
+        setSendStatus(true);
+        toast({
+          description: "Your files have been sent.",
+        });
+      },
+      onError: (error: any) => {
+        console.error(error);
+        toast({
+          title: "Something went wrong",
+          description: error.message || error.shortMessage,
+        });
+      },
+    });
+  };
 
   const handleDrop = (
     event: React.DragEvent<HTMLDivElement>,

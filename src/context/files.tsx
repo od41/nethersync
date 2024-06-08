@@ -10,21 +10,21 @@ export type NSFile = {
   uploadTimestamp: number;
 };
 
-type ApplicationContextProps = {
+type FilesContextProps = {
   file: NSFile | undefined;
   setFile: (file: NSFile) => void;
   files: NSFile[] | undefined;
 };
 
-const defaultData: ApplicationContextProps = {
+const defaultData: FilesContextProps = {
   file: undefined,
   setFile: () => {},
   files: undefined,
 };
 
-export const ApplicationContext = createContext(defaultData);
+export const FilesContext = createContext(defaultData);
 
-export function ApplicationProvider({
+export function FilesProvider({
   children,
 }: {
   children: React.ReactNode;
@@ -76,7 +76,7 @@ export function ApplicationProvider({
   }, []);
 
   return (
-    <ApplicationContext.Provider
+    <FilesContext.Provider
       value={{
         file,
         setFile,
@@ -84,6 +84,6 @@ export function ApplicationProvider({
       }}
     >
       {children}
-    </ApplicationContext.Provider>
+    </FilesContext.Provider>
   );
 }
