@@ -3,25 +3,21 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
 import { FileIndexPreviewSheet } from "./file-index-preview-sheet";
 import { useContext, useState } from "react";
-import { Dot } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-import { ApplicationContext, type NSFile } from "@/context/files";
+import { FilesContext, type NSFile } from "@/context/files";
 
 const successImage = require("@/assets/successful-send.png");
 
 export function FilesIndexCard() {
   const [sendStatus, setSendStatus] = useState(false);
 
-  const { files } = useContext(ApplicationContext);
+  const { files } = useContext(FilesContext);
 
   function handleDownload() {
     console.log("submit form data: ");
@@ -50,7 +46,7 @@ export function FilesIndexCard() {
 }
 
 function FileDisplayItem({ files }: { files: NSFile[] }) {
-  const { file, setFile } = useContext(ApplicationContext);
+  const { file, setFile } = useContext(FilesContext);
 
   return (
     <ScrollArea className="h-72 w-full">

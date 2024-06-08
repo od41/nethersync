@@ -13,7 +13,7 @@ import {
 import { Dot } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { ApplicationContext, type NSFile } from "@/context/files";
+import { FilesContext, type NSFile } from "@/context/files";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
@@ -22,7 +22,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 const placeholderImage = require("@/assets/placeholder.png");
 
 export const FileIndexPreviewSheet = ({ file }: { file: NSFile }) => {
-  const { file: selectedFile, setFile } = useContext(ApplicationContext);
+  const { file: selectedFile, setFile } = useContext(FilesContext);
 
   function handleCopy(): void {
     throw new Error("Function not implemented.");
