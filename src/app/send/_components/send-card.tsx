@@ -20,16 +20,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { PreviewSheet } from "./preview-sheet";
 import { useState } from "react";
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useToast } from "@/components/ui/use-toast";
 
 const successImage = require("@/assets/successful-send.png");
 
+interface FileWithPreview extends File {
+  preview: string;
+}
+
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const FormSchema = z
   .object({
     sendersEmail: z.string().email(),
@@ -38,9 +45,6 @@ const FormSchema = z
     message: z.string().optional(),
     isPaid: z.boolean(),
     paymentAmount: z.union([
-      /* z.coerce.number().gte(0, {
-    message: "Enter a positive number as collateral.",
-  }) */
       z.coerce
         .number()
         .positive()
@@ -48,6 +52,14 @@ const FormSchema = z
         .optional(),
       z.literal(0), // Allow zero if isPaid is false
     ]),
+    files: z
+      .array(
+        z.instanceof(File).refine((file) => file.size <= MAX_FILE_SIZE, {
+          message: "File size should not exceed 100MB",
+        })
+      )
+      .min(1, "Please upload at least one file")
+      .max(10, "You can upload a maximum of 10 files"),
   })
   .refine(
     (data) =>
@@ -62,23 +74,71 @@ const FormSchema = z
 
 export function SendCard() {
   const [sendStatus, setSendStatus] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([]);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       isPaid: false,
+      files: [],
     },
+    mode: "onChange",
   });
   const { formState, watch } = form;
   const { isValid, isDirty, errors: formErrors } = formState;
 
-  const isPaid = watch("isPaid", false);
+  const { toast } = useToast();
 
-  console.log("errors", formErrors);
-  console.log("isdirty", isDirty);
+  const isPaid = watch("isPaid", false);
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     console.log("submit form data: ", data);
+    toast({
+      description: "Your files have been sent.",
+    });
+    setSendStatus(true);
   }
+
+  const handleDrop = (
+    event: React.DragEvent<HTMLDivElement>,
+    onChange: (files: File[]) => void
+  ) => {
+    event.preventDefault();
+    const files = Array.from(event.dataTransfer.files);
+    const filePreviews = files.map((file: File) => ({
+      ...file,
+      preview: URL.createObjectURL(file),
+    }));
+    setUploadedFiles((prevFiles) => [...prevFiles, ...filePreviews]);
+    onChange([...form.getValues("files"), ...files]);
+  };
+
+  const handleRemoveFile = (index: number) => {
+    const updatedFiles = uploadedFiles.filter((_, i) => i !== index);
+    setUploadedFiles(updatedFiles);
+    if (updatedFiles.length > 0) {
+      // @ts-expect-error
+      form.setValue("files", updatedFiles as [File, ...File[]], {
+        shouldValidate: true,
+      });
+    } else {
+      form.setValue("files", [], { shouldValidate: true });
+    }
+  };
+
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    onChange: (files: File[]) => void
+  ) => {
+    if (event.target.files) {
+      const files = Array.from(event.target.files);
+      const filePreviews = files.map((file: File) => ({
+        ...file,
+        preview: URL.createObjectURL(file),
+      }));
+      setUploadedFiles((prevFiles) => [...prevFiles, ...filePreviews]);
+      onChange([...form.getValues("files"), ...files]);
+    }
+  };
 
   if (sendStatus) {
     return <SuccessDisplay />;
@@ -91,30 +151,71 @@ export function SendCard() {
             <CardTitle>Upload files</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
-            <div className="grid grid-cols-3 gap-2">
-              <button>
-                <Image
-                  alt="Product image"
-                  className="aspect-square w-full rounded-md object-cover"
-                  height="84"
-                  src="/placeholder.svg"
-                  width="84"
-                />
-              </button>
-              <button>
-                <Image
-                  alt="Product image"
-                  className="aspect-square w-full rounded-md object-cover"
-                  height="84"
-                  src="/placeholder.svg"
-                  width="84"
-                />
-              </button>
-              <button className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed">
-                <Upload className="h-4 w-4 text-muted-foreground" />
-                <span className="sr-only">Upload</span>
-              </button>
-            </div>  
+            <div>
+              <Controller
+                name="files"
+                control={form.control}
+                render={({ field: { onChange } }) => (
+                  <div
+                    onDrop={(event) => handleDrop(event, onChange)}
+                    onDragOver={(e) => e.preventDefault()}
+                    className="flex p-4 w-full items-center justify-center rounded-md border border-dashed hover:border-primary hover:bg-muted"
+                  >
+                    <input
+                      type="file"
+                      multiple
+                      onChange={(event) => handleFileChange(event, onChange)}
+                      style={{ display: "none" }}
+                      id="fileInput"
+                    />
+                    <label
+                      htmlFor="fileInput"
+                      className="cursor-pointer flex items-center text-sm text-muted-foreground"
+                    >
+                      <div className="pr-4">
+                        <Upload className="h-4 w-4 text-primary" />
+                        <span className="sr-only">Upload files</span>
+                      </div>
+                      Upload files here
+                    </label>
+                  </div>
+                )}
+              />
+
+              {formErrors.files && (
+                <p className="text-[0.8rem] font-medium text-destructive mt-1">
+                  {formErrors.files.message}
+                </p>
+              )}
+
+              {uploadedFiles.length > 0 && (
+                <ScrollArea className="w-full whitespace-nowrap rounded-md my-4">
+                  <div className="grid grid-cols-4 gap-2">
+                    {uploadedFiles.map((file, index) => (
+                      <div key={index} className="my-2 relative ">
+                        <Image
+                          src={file.preview}
+                          alt={file.name}
+                          className="aspect-square w-full border border-muted rounded-md hover:border-primary object-cover"
+                          height="40"
+                          width="40"
+                        />
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -top-1.5 -right-1.5 rounded-full p-0.5 h-5 w-5"
+                          onClick={() => handleRemoveFile(index)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                        <p>{file.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+              )}
+            </div>
 
             <FormField
               control={form.control}
