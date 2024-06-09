@@ -25,11 +25,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { PreviewSheet } from "./preview-sheet";
 import { useState } from "react";
-import { Upload, X } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { APILLION_AUTH_SECRET, APILLON_BUCKET_UUID } from "@/client/config";
 
@@ -87,16 +86,19 @@ export function SendCard() {
     mode: "onChange",
   });
   const { formState, watch } = form;
-  const { isValid, isDirty, errors: formErrors } = formState;
+  const { isValid, isDirty, isSubmitting, errors: formErrors } = formState;
   const [uploadProgress, setUploadProgress] = useState(0);
-
-  const queryClient = useQueryClient();
 
   const { toast } = useToast();
 
   const isPaid = watch("isPaid", false);
 
-  const uploadFilesAction = async (formData: z.infer<typeof FormSchema>) => {
+  const storeMetadata = async (fileMetadata: any) => {
+    const response = await axios.post("/send/upload", fileMetadata);
+    return response.data;
+  };
+
+  const startUploadSession = async (formData: z.infer<typeof FormSchema>) => {
     const { files, sendersEmail } = formData;
     const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/upload`;
     const headers = {
@@ -106,85 +108,85 @@ export function SendCard() {
     const data = {
       files: files.map((file) => ({
         fileName: file.name,
-        path: `send/${sendersEmail}/${file.name}`,
+        path: `send/${sendersEmail}`,
         contentType: file.type,
       })),
     };
 
-    const signedUrlResponse = await axios.post(url, data, {
+    const response = await axios.post(url, data, { headers });
+    return response.data.data;
+  };
+
+  const uploadFileToSignedUrl = async (url: string, file: File) => {
+    const headers = {
+      "Content-Type": "application/octet-stream",
+    };
+
+    await axios.put(url, file, {
       headers,
+      onUploadProgress: (progressEvent) => {
+        const progress = (progressEvent.loaded / progressEvent.total!) * 100;
+        setUploadProgress(progress);
+        console.log("uploading...", uploadProgress);
+      },
     });
-
-    const { sessionUuid: uploadSessionId, files: filesSignedUrls } =
-      signedUrlResponse.data.data;
-
-    filesSignedUrls.map(async (signedItem: any, index: number) => {
-      const fileDataToUpload = files[index];
-      console.log("file path", fileDataToUpload);
-      // curl --location --request PUT "https://sync-to-ipfs-queue.s3.eu-west-1.amazonaws.com/STORAGE_sessions/73/3b6113bc-f265-4662-8cc5-ea86f06cc74b/My%20test%20file?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAQIMRRA6GJRL57L7G%2F20230215%2Feu-west-1%2Fs3%2Faws4_request&X-Amz-Date=20230215T114524Z&X-Amz-Expires=900&X-Amz-Signature=499367f6c6bff5be50686724475ac2fa6307b77b94fd1a25584c092fe74b0a58&X-Amz-SignedHeaders=host&x-id=PutObject" \
-      // --data-binary "My test content"
-      const response = await axios.put(signedItem.url, fileDataToUpload, {
-        // headers,
-        onUploadProgress: (progressEvent) => {
-          const progress = (progressEvent.loaded / progressEvent.total!) * 100;
-          setUploadProgress(progress);
-        },
-      });
-    });
-
-    return signedUrlResponse.data;
   };
 
-  const storeMetadata = async (fileMetadata: any) => {
-    const response = await axios.post("/send/upload", fileMetadata);
-    return response.data;
-  };
-
-  const endUploadOfFiles = async (sessionId: string) => {
+  const endUploadSession = async (sessionId: string) => {
     const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/upload/${sessionId}/end`;
-    console.log("usl", url);
     const headers = {
       Authorization: `${APILLION_AUTH_SECRET}`,
       "Content-Type": "application/json",
     };
 
-    const response = await axios.post(
-      url,
-      {},
-      {
-        headers,
-      }
-    );
+    const response = await axios.post(url, {}, { headers });
+    return response.data;
   };
 
-  const mutation = useMutation({ mutationFn: uploadFilesAction });
+  const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+    try {
+      // Step 1: Initialize upload session and get signed URLs
+      const { sessionUuid: sessionId, files: signedUrls } =
+        await startUploadSession(data);
 
-  const onSubmit = (data: z.infer<typeof FormSchema>) => {
-    mutation.mutate(data, {
-      onSuccess: async (res: any) => {
-        const fileMetadata = {
-          files: res.data.files,
-          sessionId: res.data.sessionUuid,
-          sendersEmail: data.sendersEmail,
-          recipientEmail: data.receiversEmail,
-          isPaid: data.isPaid,
-          paymentAmount: data.paymentAmount,
-        };
-        await endUploadOfFiles(res.data.sessionUuid);
-        await storeMetadata(fileMetadata);
-        setSendStatus(true);
-        toast({
-          description: "Your files have been sent.",
-        });
-      },
-      onError: (error: any) => {
-        console.error(error);
-        toast({
-          title: "Something went wrong",
-          description: error.message || error.shortMessage,
-        });
-      },
-    });
+      console.log(sessionId, signedUrls);
+
+      // Step 2: Upload files to signed URLs
+      const resFiles = await Promise.all(
+        signedUrls.map((signedUrl: any, index: number) =>
+          uploadFileToSignedUrl(signedUrl.url, uploadedFiles[index])
+        )
+      );
+
+      console.log("resfiles", resFiles);
+
+      const fileMetadata = {
+        files: resFiles,
+        sessionId: sessionId,
+        sendersEmail: data.sendersEmail,
+        recipientEmail: data.receiversEmail,
+        isPaid: data.isPaid,
+        paymentAmount: data.paymentAmount,
+      };
+
+      // Step 3: End the upload session
+      await endUploadSession(sessionId);
+
+      // Step 4: Store file data in db
+      await storeMetadata(fileMetadata);
+
+      setSendStatus(true);
+      toast({
+        description: "Your files have been sent.",
+      });
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      toast({
+        title: "Something went wrong",
+        // @ts-ignore
+        description: (error as Error).message || error!.shortMessage,
+      });
+    }
   };
 
   const handleDrop = (
@@ -306,106 +308,130 @@ export function SendCard() {
               )}
             </div>
 
-            <FormField
-              control={form.control}
-              name="receiversEmail"
-              render={({ field }) => (
-                <FormItem className="space-y-1">
-                  <FormLabel className="text-xs">
-                    Receiver&apos;s Email
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="other-email@mail.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {!isSubmitting && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="receiversEmail"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-xs">
+                        Receiver&apos;s Email
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="other-email@mail.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="sendersEmail"
-              render={({ field }) => (
-                <FormItem className="space-y-1">
-                  <FormLabel className="text-xs">Sender&apos;s Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="your-email@mail.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="sendersEmail"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-xs">
+                        Sender&apos;s Email
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="your-email@mail.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem className="space-y-1">
-                  <FormLabel className="text-xs">Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Final files..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-xs">Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Final files..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="message"
-              render={({ field }) => (
-                <FormItem className="space-y-1">
-                  <FormLabel className="text-xs">Message</FormLabel>
-                  <FormControl>
-                    <Input placeholder="A note about the file(s)" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="message"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-xs">Message</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="A note about the file(s)"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="isPaid"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Request payment</FormLabel>
-                    <FormDescription>
-                      Receiver pays before downloading
-                    </FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="isPaid"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Request payment</FormLabel>
+                        <FormDescription>
+                          Receiver pays before downloading
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
 
-            {isPaid && (
-              <FormField
-                control={form.control}
-                name="paymentAmount"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="text-xs">
-                      Amount (USDC or USDT)
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="0 USDC" type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                {isPaid && (
+                  <FormField
+                    control={form.control}
+                    name="paymentAmount"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-xs">
+                          Amount (USDC or USDT)
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="0 USDC"
+                            type="number"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 )}
-              />
+              </>
             )}
           </CardContent>
           <CardFooter>
-            <Button type="submit" disabled={!isValid} className="w-full">
-              Send Files
+            <Button
+              type="submit"
+              disabled={!isValid || isSubmitting}
+              className="w-full"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...{" "}
+                  {uploadProgress != undefined && uploadProgress}
+                </>
+              ) : (
+                <>Send Files</>
+              )}
             </Button>
           </CardFooter>
         </Card>
@@ -427,7 +453,7 @@ function SuccessDisplay() {
             src={String(successImage.default.src)}
             width={500}
             height={500}
-            alt="Picture of the author"
+            alt="Files sent successfully"
           />
           <CardTitle>All done!</CardTitle>
         </CardHeader>

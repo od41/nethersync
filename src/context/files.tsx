@@ -8,6 +8,9 @@ export type NSFile = {
   format: string;
   size: string;
   uploadTimestamp: number;
+  receiver?: string;
+  isPaid?: boolean;
+  paymentAmount?: number;
 };
 
 type FilesContextProps = {
@@ -24,49 +27,30 @@ const defaultData: FilesContextProps = {
 
 export const FilesContext = createContext(defaultData);
 
-export function FilesProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function FilesProvider({ children }: { children: React.ReactNode }) {
   const [file, setFile] = useState<any>(undefined);
   const [selected, setSelected] = useState<any>(undefined);
 
   const files: NSFile[] = [
     {
       id: "djsjd324",
-      name: "my photo",
-      format: "jpeg",
-      size: "42mb",
-      uploadTimestamp: 1709818460,
+      name: "google-deepmind-UHiedDRzjgM-unsplash",
+      format: "jpg",
+      size: "3mb",
+      receiver: "files@nethersync.xyz",
+      isPaid: true,
+      paymentAmount: 320,
+      uploadTimestamp: 1717629066,
     },
     {
       id: "fgg4422",
-      name: "my photo",
-      format: "jpeg",
-      size: "42mb",
-      uploadTimestamp: 1717720460,
-    },
-    {
-      id: "dg4556",
-      name: "my photo",
-      format: "jpeg",
-      size: "42mb",
-      uploadTimestamp: 1709818460,
-    },
-    {
-      id: "g788654",
-      name: "my photo",
-      format: "jpeg",
-      size: "42mb",
-      uploadTimestamp: 1709818460,
-    },
-    {
-      id: "ghg2535",
-      name: "my photo",
-      format: "jpeg",
-      size: "42mb",
-      uploadTimestamp: 1709818460,
+      name: "google-deepmind-NJzatVoy-U8-unsplash",
+      format: "jpg",
+      size: "4mb",
+      receiver: "files@nethersync.xyz",
+      isPaid: true,
+      paymentAmount: 320,
+      uploadTimestamp: 1717629066,
     },
   ];
 

@@ -37,7 +37,6 @@ export function Navbar() {
           {/* <Package2 className="h-6 w-6" /> */}
           <span className="font-bold text-primary uppercase">Nethersync</span>
         </Link>
-        
       </nav>
       <Sheet>
         <SheetTrigger asChild>
@@ -74,7 +73,7 @@ export function Navbar() {
         </SheetContent>
       </Sheet>
       <div className="flex w-full items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">
-      {links.map(({ title, href, description }) => (
+        {links.map(({ title, href, description }) => (
           <Link
             key={href}
             href={href}
@@ -89,7 +88,7 @@ export function Navbar() {
             {title}
           </Link>
         ))}
-        <span>signin</span>
+        <span>Profile</span>
         {/* <div>{formatUnits(kusdBalance as bigint, 18)}KUSD</div> */}
         {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>

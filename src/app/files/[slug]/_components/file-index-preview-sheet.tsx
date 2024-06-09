@@ -2,7 +2,6 @@ import React, { useContext } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -12,14 +11,13 @@ import {
 } from "@/components/ui/sheet";
 import { Dot } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
 import { FilesContext, type NSFile } from "@/context/files";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const placeholderImage = require("@/assets/placeholder.png");
+const placeholderImage = require("@/assets/placeholder.jpg");
 
 export const FileIndexPreviewSheet = ({ file }: { file: NSFile }) => {
   const { file: selectedFile, setFile } = useContext(FilesContext);
@@ -80,21 +78,23 @@ export const FileIndexPreviewSheet = ({ file }: { file: NSFile }) => {
             <Separator className="my-6" />
             <div className="flex space-x-2 w-full justify-between">
               <div>
-                <h4 className="text-lg lowercase">mail@mail.com</h4>
+                <h4 className="text-lg lowercase">{selectedFile!.receiver}</h4>
                 <p className="text-xs uppercase text-muted-foreground">
                   recipient mail
                 </p>
               </div>
 
               <div>
-                <h4 className="text-lg lowercase">300 USDC</h4>
+                <h4 className="text-lg lowercase">
+                  {selectedFile!.paymentAmount} USDC
+                </h4>
                 <p className="text-xs uppercase text-muted-foreground">
                   payment amount
                 </p>
               </div>
 
               <div>
-                <h4 className="text-lg uppercase">1</h4>
+                <h4 className="text-lg uppercase">0</h4>
                 <p className="text-xs uppercase text-muted-foreground">
                   download count
                 </p>
@@ -106,12 +106,14 @@ export const FileIndexPreviewSheet = ({ file }: { file: NSFile }) => {
                 src={String(placeholderImage.default.src)}
                 width={500}
                 height={500}
-                alt="Placeholder preview"
+                alt={`${selectedFile!.name}-photo preview`}
               />
             </div>
           </ScrollArea>
           <SheetFooter className="absolute bottom-0 right-0 py-6 px-12 bg-white w-full flex md:justify-start">
-            <Button>Download {selectedFile!.name}</Button>
+            <Button>
+              Download &quot;{selectedFile!.name.slice(0, 10)}...&quot;
+            </Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>
