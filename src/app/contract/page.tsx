@@ -1,7 +1,12 @@
 import React from "react";
+import { CreateContractCard } from "./_components/create-contract-card";
 
 const ContractPage = () => {
-  return <div>ContractPage</div>;
+  return (
+    <div className="max-w-[360px]">
+      <CreateContractCard />
+    </div>
+  );
 };
 
 export default ContractPage;

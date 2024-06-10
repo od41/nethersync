@@ -182,6 +182,7 @@ export function SendCard() {
     } catch (error) {
       console.error("Error uploading files:", error);
       toast({
+        variant: "destructive",
         title: "Something went wrong",
         // @ts-ignore
         description: (error as Error).message || error!.shortMessage,
