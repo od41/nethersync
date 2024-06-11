@@ -1,20 +1,24 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import DefaultPage from "./_components/default-page";
 import { Toaster } from "@/components/ui/toaster";
 import { ApplicationProvider } from "@/context";
-import BackgroundCarousel from "@/components/ui/background-carousel";
+import localFont from "next/font/local";
 
-const inter = Inter({ subsets: ["latin"] });
+const fontSans = localFont({
+  src: "../assets/nunito-var.ttf",
+  variable: "--font-sans",
+});
+const headingSans = localFont({
+  src: "../assets/anton-regular.ttf",
+  variable: "--font-anton-heading",
+});
 
 export const metadata: Metadata = {
   title: "NetherSync",
   description: "Share files & assets with clients securely",
 };
-
-
 
 export default function RootLayout({
   children,
@@ -23,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${fontSans.variable} font-sans`}>
         <ApplicationProvider>
           <TooltipProvider>
             <>
