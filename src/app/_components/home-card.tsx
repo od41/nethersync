@@ -142,7 +142,7 @@ export function HomeCard() {
                                   "saturate-100"
                               )}
                             />
-                            Contract
+                            New Project
                           </FormLabel>
                         </FormItem>
                       </div>

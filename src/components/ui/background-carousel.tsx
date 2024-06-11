@@ -28,12 +28,7 @@ const BackgroundCarousel = ({ images }: { images: any }) => {
             key={index}
             className=" flex items-center justify-center pl-0"
           >
-            <Image
-              src={img.src}
-              layout="fill"
-              objectFit="cover"
-              alt={`Slide ${index}`}
-            />
+            <Image src={img.src} objectFit="cover" alt={`Slide ${index}`} />
           </CarouselItem>
         ))}
       </CarouselContent>

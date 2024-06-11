@@ -15,6 +15,8 @@ import { usePathname } from "next/navigation";
 //   DropdownMenuItem,
 // } from "@radix-ui/react-dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
+const nsLogo = require("@/assets/logo-dark.png");
 
 const links: { title: string; href: string; description: string }[] = [
   {
@@ -34,9 +36,15 @@ export function Navbar() {
           href="/"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
-          {/* <Package2 className="h-6 w-6" /> */}
+          <Image
+            src={nsLogo.default.src}
+            // className="h-6 w-6"
+            alt="nethersync logo"
+            width={140}
+            height={22.7}
+          />
           <span className="font-bold text-white shadow-md  uppercase font-display">
-            Nethersync
+            {/* Nethersync */}
           </span>
         </Link>
       </nav>
