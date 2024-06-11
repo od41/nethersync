@@ -243,171 +243,86 @@ export function SendCard() {
             <CardTitle>Upload files</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3">
-            <div>
-              <Controller
-                name="files"
-                control={form.control}
-                render={({ field: { onChange } }) => (
-                  <div
-                    onDrop={(event) => handleDrop(event, onChange)}
-                    onDragOver={(e) => e.preventDefault()}
-                    className="flex p-4 w-full items-center justify-center rounded-md border border-dashed hover:border-primary hover:bg-muted"
-                  >
-                    <input
-                      type="file"
-                      multiple
-                      onChange={(event) => handleFileChange(event, onChange)}
-                      style={{ display: "none" }}
-                      id="fileInput"
-                    />
-                    <label
-                      htmlFor="fileInput"
-                      className="cursor-pointer flex items-center text-sm text-muted-foreground"
+            <ScrollArea className="max-h-[480px] h-[20rem]">
+              <div>
+                <Controller
+                  name="files"
+                  control={form.control}
+                  render={({ field: { onChange } }) => (
+                    <div
+                      onDrop={(event) => handleDrop(event, onChange)}
+                      onDragOver={(e) => e.preventDefault()}
+                      className="flex p-4 w-full items-center justify-center rounded-md border border-dashed hover:border-primary hover:bg-muted"
                     >
-                      <div className="pr-4">
-                        <Upload className="h-4 w-4 text-primary" />
-                        <span className="sr-only">Upload files</span>
-                      </div>
-                      Upload files here
-                    </label>
-                  </div>
+                      <input
+                        type="file"
+                        multiple
+                        onChange={(event) => handleFileChange(event, onChange)}
+                        style={{ display: "none" }}
+                        id="fileInput"
+                      />
+                      <label
+                        htmlFor="fileInput"
+                        className="cursor-pointer flex items-center text-sm text-muted-foreground"
+                      >
+                        <div className="pr-4">
+                          <Upload className="h-4 w-4 text-primary" />
+                          <span className="sr-only">Upload files</span>
+                        </div>
+                        Upload files here
+                      </label>
+                    </div>
+                  )}
+                />
+
+                {formErrors.files && (
+                  <p className="text-[0.8rem] font-medium text-destructive mt-1">
+                    {formErrors.files.message}
+                  </p>
                 )}
-              />
 
-              {formErrors.files && (
-                <p className="text-[0.8rem] font-medium text-destructive mt-1">
-                  {formErrors.files.message}
-                </p>
-              )}
+                {uploadedFiles.length > 0 && (
+                  <ScrollArea className="w-full whitespace-nowrap rounded-md my-4">
+                    <div className="grid grid-cols-4 gap-2">
+                      {uploadedFiles.map((file, index) => (
+                        <div key={index} className="my-2 relative ">
+                          <Image
+                            src={file.preview}
+                            alt={file.name}
+                            className="aspect-square w-full border border-muted rounded-md hover:border-primary object-cover"
+                            height="40"
+                            width="40"
+                          />
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-1.5 -right-1.5 rounded-full p-0.5 h-5 w-5"
+                            onClick={() => handleRemoveFile(index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                          <p>{file.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                )}
+              </div>
 
-              {uploadedFiles.length > 0 && (
-                <ScrollArea className="w-full whitespace-nowrap rounded-md my-4">
-                  <div className="grid grid-cols-4 gap-2">
-                    {uploadedFiles.map((file, index) => (
-                      <div key={index} className="my-2 relative ">
-                        <Image
-                          src={file.preview}
-                          alt={file.name}
-                          className="aspect-square w-full border border-muted rounded-md hover:border-primary object-cover"
-                          height="40"
-                          width="40"
-                        />
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute -top-1.5 -right-1.5 rounded-full p-0.5 h-5 w-5"
-                          onClick={() => handleRemoveFile(index)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                        <p>{file.name}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-              )}
-            </div>
-
-            {!isSubmitting && (
-              <>
-                <FormField
-                  control={form.control}
-                  name="receiversEmail"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-xs">
-                        Receiver&apos;s Email
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="other-email@mail.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="sendersEmail"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-xs">
-                        Sender&apos;s Email
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="your-email@mail.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-xs">Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Final files..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-xs">Message</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="A note about the file(s)"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="isPaid"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>Request payment</FormLabel>
-                        <FormDescription>
-                          Receiver pays before downloading
-                        </FormDescription>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                {isPaid && (
+              {!isSubmitting && (
+                <>
                   <FormField
                     control={form.control}
-                    name="paymentAmount"
+                    name="receiversEmail"
                     render={({ field }) => (
                       <FormItem className="space-y-1">
                         <FormLabel className="text-xs">
-                          Amount (USDC or USDT)
+                          Receiver&apos;s Email
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="0 USDC"
-                            type="number"
+                            placeholder="other-email@mail.com"
                             {...field}
                           />
                         </FormControl>
@@ -415,9 +330,100 @@ export function SendCard() {
                       </FormItem>
                     )}
                   />
-                )}
-              </>
-            )}
+
+                  <FormField
+                    control={form.control}
+                    name="sendersEmail"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-xs">
+                          Sender&apos;s Email
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="your-email@mail.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-xs">Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Final files..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="message"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-xs">Message</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="A note about the file(s)"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="isPaid"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Request payment</FormLabel>
+                          <FormDescription>
+                            Receiver pays before downloading
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {isPaid && (
+                    <FormField
+                      control={form.control}
+                      name="paymentAmount"
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-xs">
+                            Amount (USDC or USDT)
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="0 USDC"
+                              type="number"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </>
+              )}
+              <ScrollBar />
+            </ScrollArea>
           </CardContent>
           <CardFooter>
             <Button

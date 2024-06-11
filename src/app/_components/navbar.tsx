@@ -35,7 +35,7 @@ export function Navbar() {
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
           {/* <Package2 className="h-6 w-6" /> */}
-          <span className="font-bold text-primary uppercase font-heading">
+          <span className="font-bold text-white shadow-md  uppercase font-display">
             Nethersync
           </span>
         </Link>

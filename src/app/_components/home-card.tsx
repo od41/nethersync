@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { FileInput, FileLock2 } from "lucide-react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -23,8 +22,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+
+const contractIcon = require("@/assets/send-file.png");
+const packageIcon = require("@/assets/package.png");
 
 enum UserActions {
   WorkContract = "work-contract",
@@ -43,13 +46,14 @@ export function HomeCard() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-        userAction: UserActions.SendFiles,
-      },
+      userAction: UserActions.SendFiles,
+    },
   });
   const router = useRouter();
 
-  const { formState } = form;
+  const { formState, watch } = form;
   const { isValid } = formState;
+  const selectedAction = watch("userAction");
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const navigateTo =
@@ -88,9 +92,23 @@ export function HomeCard() {
                           </FormControl>
                           <FormLabel
                             htmlFor={UserActions.SendFiles}
-                            className="flex flex-col p-4 py-6 text-center items-center justify-between rounded-md border-2 border-muted bg-popover hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                            className={cn(
+                              "flex flex-col text-muted-foreground p-4 py-6 text-center items-center justify-between rounded-md border-2 border-muted bg-popover hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary",
+                              selectedAction === UserActions.SendFiles &&
+                                "saturate-100 text-foreground"
+                            )}
                           >
-                            <FileInput className="mb-1" />
+                            <Image
+                              src={packageIcon.default.src}
+                              alt="send files"
+                              width={32}
+                              height={32}
+                              className={cn(
+                                "mb-3 saturate-0",
+                                selectedAction === UserActions.SendFiles &&
+                                  "saturate-100"
+                              )}
+                            />
                             Send Files
                           </FormLabel>
                         </FormItem>
@@ -107,10 +125,24 @@ export function HomeCard() {
                           </FormControl>
                           <FormLabel
                             htmlFor={UserActions.WorkContract}
-                            className="flex flex-col p-4 py-6 text-center items-center justify-between rounded-md border-2 border-muted bg-popover hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                            className={cn(
+                              "flex flex-col text-muted-foreground p-4 py-6 text-center items-center justify-between rounded-md border-2 border-muted bg-popover hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary",
+                              selectedAction === UserActions.WorkContract &&
+                                "saturate-100 text-foreground"
+                            )}
                           >
-                            <FileLock2 className="mb-1" />
-                            New Contract
+                            <Image
+                              src={contractIcon.default.src}
+                              alt="work contract"
+                              width={32}
+                              height={32}
+                              className={cn(
+                                "mb-3 saturate-0",
+                                selectedAction === UserActions.WorkContract &&
+                                  "saturate-100"
+                              )}
+                            />
+                            Contract
                           </FormLabel>
                         </FormItem>
                       </div>

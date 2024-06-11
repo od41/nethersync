@@ -22,7 +22,7 @@ const BackgroundCarousel = ({ images }: { images: any }) => {
         }),
       ]}
     >
-      <CarouselContent className=" h-screen w-full -ml-0 ">
+      <CarouselContent className=" h-screen w-full -ml-0 radial-dark-transparent">
         {images.map((img: any, index: number) => (
           <CarouselItem
             key={index}

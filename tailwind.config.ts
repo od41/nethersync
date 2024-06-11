@@ -18,9 +18,12 @@ const config = {
       },
     },
     extend: {
+      backgroundImage: {
+        'radial-dark-transparent': 'radial-gradient(circle, #4a4a4a, rgba(74, 74, 74, 0))',
+      },
       fontFamily: {
         sans: ["var(--font-sans)"],
-        heading: ["var(--font-anton-heading)"],
+        display: ["var(--font-display)"],
       },
       colors: {
         border: "hsl(var(--border))",
