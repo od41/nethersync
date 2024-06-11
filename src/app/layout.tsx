@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import DefaultPage from "./_components/default-page";
 import { Toaster } from "@/components/ui/toaster";
 import { ApplicationProvider } from "@/context";
+import BackgroundCarousel from "@/components/ui/background-carousel";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,6 +13,8 @@ export const metadata: Metadata = {
   title: "NetherSync",
   description: "Share files & assets with clients securely",
 };
+
+
 
 export default function RootLayout({
   children,
