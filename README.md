@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# [NetherSync](https://nethersync.xyz) (WIP)
 
-## Getting Started
+## Overview
 
-First, run the development server:
+NETHERSYNC is a decentralized escrow, file sharing and dispute resolution platform to enhance trust between digital freelancers & their clients
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Sponsor Tools
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. Apillon API: integrated with storage through Apillon's API, which in turn uses CRUST.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. Kilt DIDs: authentication & user accounts enabled decentralized IDs through the Kilt service available on Apillon.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+3. Phala: encryption/decryrption of files.
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+## Benefits
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### ...for clients
+- Thwarts fraud attempts.
+- Confidence in the security and integrity of shared files.
+- Dispute resolution mechanism ensures fair handling of disagreements.
+- Simplified and secure process for receiving and reviewing work.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### ...for freelancers
+- Always get paid
+- Saving you the agony of chasing invoices
+- Escrow service puts you in the driver’s seat to ensure you receive full value for your efforts.
 
-## Deploy on Vercel
+[![Live demo icon](/images/live-demo.png)](https://nethersync.xyz/)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+[Video Demo](https://etun.short.gy/nethersync-encode-demo)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Architecture
+![Screenshot of a send on NETHERSYNC](/images/)
+
+## Contracts
+
+Main: [0x000....000](https://) (Testnet)
+
+## Usage
+
+## Installation
+
+To install NETHERSYNC, follow these steps:
+
+1. Clone the repository: `git clone https://github.com/od41/netherysync.git`
+2. Navigate to the project directory: `cd nethersync`
+3. Install dependencies: `yarn`
+4. Start the application: `yarn dev`
+
+## Contributors
+
+- [Odafe](https://twitter.com/elder41_)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
+
+## Acknowledgements
+
+We would like to thank the organizers of W3TRANSFER hackathon for providing us with the opportunity to work on this project.
