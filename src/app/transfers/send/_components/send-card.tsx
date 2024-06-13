@@ -100,7 +100,7 @@ export function SendCard() {
   const isPaid = watch("isPaid", false);
 
   const storeMetadata = async (fileMetadata: any) => {
-    const response = await axios.post("/send/upload", fileMetadata);
+    const response = await axios.post("/transfers/send/upload", fileMetadata);
     return response.data;
   };
 
