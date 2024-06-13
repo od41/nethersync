@@ -1,10 +1,10 @@
 import React from "react";
-import { FilesCard } from "./_components/files-card";
+import { TransfersCard } from "./_components/transfers-card";
 
 const FilesPage = () => {
   return (
     <div className="max-w-[300px]">
-      <FilesCard />
+      <TransfersCard />
     </div>
   );
 };

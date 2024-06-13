@@ -57,7 +57,9 @@ export function HomeCard() {
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const navigateTo =
-      data.userAction === UserActions.SendFiles ? "/send" : "/contract";
+      data.userAction === UserActions.SendFiles
+        ? "/transfers/send"
+        : "/contracts/create";
     router.push(navigateTo);
   }
   return (

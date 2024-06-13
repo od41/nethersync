@@ -20,6 +20,16 @@ const nsLogo = require("@/assets/logo-dark.png");
 
 const links: { title: string; href: string; description: string }[] = [
   {
+    title: "Transfers",
+    href: "/transfers",
+    description: "Transfer history",
+  },
+  {
+    title: "Contracts",
+    href: "/contracts",
+    description: "Contracts",
+  },
+  {
     title: "About",
     href: "/about",
     description: "About the project",
@@ -64,9 +74,9 @@ export function Navbar() {
               {/* <Package2 className="h-6 w-6" /> */}
               <span className="font-bold text-primary uppercase">Keeper</span>
             </Link>
-            {links.map(({ title, href, description }) => (
+            {links.map(({ title, href }) => (
               <Link
-                key={href}
+                key={`main-nav-link-${href}`}
                 href={href}
                 className={`transition-colors hover:text-primary hover:underline hover:underline-offset-4
                 ${
@@ -82,8 +92,8 @@ export function Navbar() {
           </nav>
         </SheetContent>
       </Sheet>
-      <div className="flex w-full items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        {links.map(({ title, href, description }) => (
+      <div className="flex w-fit px-4 py-2 rounded-md items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-6 bg-background">
+        {links.map(({ title, href }) => (
           <Link
             key={href}
             href={href}

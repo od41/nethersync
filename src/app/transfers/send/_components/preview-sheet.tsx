@@ -59,7 +59,7 @@ export const PreviewSheet = () => {
           <Separator className="my-6" />
           <div className="flex space-x-2">
             <Input
-              value={`${URL_ROOT}/files/${completedTransfer!.id}`}
+              value={`${URL_ROOT}/transfers/${completedTransfer!.id}`}
               readOnly
             />
             <Button

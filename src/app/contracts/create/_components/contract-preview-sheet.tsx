@@ -13,8 +13,9 @@ import {
 import { Dot } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
+import { URL_ROOT } from "@/client/config";
 
-export const PreviewSheet = () => {
+export const ContractPreviewSheet = () => {
   function handleCopy(): void {
     throw new Error("Function not implemented.");
   }
@@ -30,16 +31,16 @@ export const PreviewSheet = () => {
         <SheetContent className="w-full sm:max-w-[50%] p-12 pt-0">
           <SheetHeader className="w-full">
             <div className="h-16 mb-12"></div>
-            <SheetTitle className="text-3xl">File title</SheetTitle>
+            <SheetTitle className="text-3xl">Stock photos</SheetTitle>
             <SheetDescription>
               <div className="flex gap-0 uppercase text-xs items-center">
-                20M Ago <Dot /> 5MB <Dot /> JPEG
+                1M Ago <Dot /> 3MB <Dot /> JPG
               </div>
             </SheetDescription>
           </SheetHeader>
           <Separator className="my-6" />
           <div className="flex space-x-2">
-            <Input value="http://ns.xyz/link/to/document" readOnly />
+            <Input value={`${URL_ROOT}/transfers/bwks2klslkadakkh`} readOnly />
             <Button
               variant="secondary"
               onClick={handleCopy}
@@ -51,14 +52,14 @@ export const PreviewSheet = () => {
           <Separator className="my-6" />
           <div className="grid gap-4">
             <div>
-              <h4 className="text-lg lowercase">mail@mail.com</h4>
+              <h4 className="text-lg lowercase">hello@nethersync.xyz</h4>
               <p className="text-xs uppercase text-muted-foreground">
                 recipient mail
               </p>
             </div>
 
             <div>
-              <h4 className="text-lg lowercase">300 USDC</h4>
+              <h4 className="text-lg uppercase">350 USDC</h4>
               <p className="text-xs uppercase text-muted-foreground">
                 payment amount
               </p>
@@ -72,7 +73,7 @@ export const PreviewSheet = () => {
             </div>
 
             <div>
-              <h4 className="text-lg uppercase">1</h4>
+              <h4 className="text-lg uppercase">0</h4>
               <p className="text-xs uppercase text-muted-foreground">
                 download count
               </p>

@@ -23,7 +23,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { SingleContractSheet } from "./single-contract-sheet";
+import { ContractPreviewSheet } from "./contract-preview-sheet";
 import { useState } from "react";
 import { ArrowLeft, Loader2, Upload, X } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -39,16 +39,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { MilestoneOptions } from "@/context/contracts";
 
 const successImage = require("@/assets/successful-send.png");
 
-enum MilestoneOptions {
-  Start = 0,
-  Quarter = 25,
-  Halfway = 50,
-  ThreeQuarters = 75,
-  End = 100,
-}
+
 
 const msValues = [
   { id: "start", name: "Start", value: MilestoneOptions.Start },
@@ -61,14 +56,6 @@ const msValues = [
   },
   { id: "end", name: "End", value: MilestoneOptions.End },
 ];
-
-interface MilestoneType {
-  description: string;
-  dueDate: Date;
-  milestoneCount: MilestoneOptions;
-  includesPayout: boolean;
-  payout: number;
-}
 
 const FormSchema = z
   .object({
@@ -101,7 +88,7 @@ const FormSchema = z
     }
   );
 
-export const SingleContractCard = () => {
+export const CreateContractCard = () => {
   const [sendStatus, setSendStatus] = useState(false);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -369,7 +356,7 @@ function SuccessDisplay() {
           This project details have been forwarded to the client for approval
         </CardContent>
         <CardFooter className="grid gap-3">
-          <SingleContractSheet />
+          <ContractPreviewSheet />
 
           <Button className="w-full" onClick={() => navigateToSend()}>
             Create New Contract
