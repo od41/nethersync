@@ -14,11 +14,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { FilesContext, type NSFile } from "@/context/files";
 import { ContractsContext, NSMilestone } from "@/context/contracts";
 import { Separator } from "@/components/ui/separator";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const successImage = require("@/assets/successful-send.png");
 
 export function SingleContractCard() {
   const { selectedContract } = useContext(ContractsContext);
+  const router = useRouter();
 
   function handleDownload() {
     console.log("submit form data: ");
@@ -27,7 +30,19 @@ export function SingleContractCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{selectedContract?.title}</CardTitle>
+        <Button
+          size="sm"
+          className="w-fit"
+          variant="ghost"
+          onClick={() => {
+            router.push("/contracts");
+          }}
+          aria-label="Go back"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Go back
+        </Button>
+        <CardTitle className="capitalize">{selectedContract?.title}</CardTitle>
         {selectedContract?.description && (
           <CardDescription>{selectedContract?.description}</CardDescription>
         )}

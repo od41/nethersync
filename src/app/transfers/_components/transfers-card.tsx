@@ -24,7 +24,7 @@ export function TransfersCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Contracts</CardTitle>
+        <CardTitle>Transfers</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-3">
         <div>
