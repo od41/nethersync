@@ -110,7 +110,7 @@ export const FileIndexPreviewSheet = ({ file }: { file: NSFile }) => {
               />
             </div>
           </ScrollArea>
-          <SheetFooter className="absolute bottom-0 right-0 py-6 px-12 bg-white w-full flex md:justify-start">
+          <SheetFooter className="absolute bottom-0 right-0 py-6 px-12 bg-background w-full flex md:justify-start">
             <Button>
               Download &quot;{selectedFile!.name.slice(0, 10)}...&quot;
             </Button>
