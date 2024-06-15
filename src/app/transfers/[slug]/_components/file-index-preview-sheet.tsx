@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import { Dot } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { FilesContext, type NSFile } from "@/context/files";
+import { FilesContext, type NSFile } from "@/context/transfers";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";

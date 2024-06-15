@@ -10,7 +10,7 @@ import {
 import { SingleTransferSheet } from "./single-transfer-sheet";
 import { useContext, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FilesContext, type NSFile } from "@/context/files";
+import { FilesContext, type NSFile } from "@/context/transfers";
 
 const successImage = require("@/assets/successful-send.png");
 

@@ -31,7 +31,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 import axios from "axios";
 import { APILLION_AUTH_SECRET, APILLON_BUCKET_UUID } from "@/client/config";
-import { FilesContext, NSFile } from "@/context/files";
+import { FilesContext, NSFile } from "@/context/transfers";
 
 import { Progress } from "@/components/ui/progress";
 

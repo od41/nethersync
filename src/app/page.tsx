@@ -1,5 +1,4 @@
-import Image from "next/image";
-import {HomeCard} from "@/app/_components/home-card"
+import { HomeCard } from "@/app/_components/home-card";
 
 export default function Home() {
   return (
