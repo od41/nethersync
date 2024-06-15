@@ -28,7 +28,7 @@ export type NSTransfer = {
   paymentAmount?: number;
 };
 
-type FilesContextProps = {
+type TransfersContextProps = {
   file: NSFile | undefined;
   setFile: (file: NSFile) => void;
   files: NSFile[] | undefined;
@@ -36,7 +36,7 @@ type FilesContextProps = {
   setTransfer: (file: NSTransfer) => void;
 };
 
-const defaultData: FilesContextProps = {
+const defaultData: TransfersContextProps = {
   file: undefined,
   setFile: () => {},
   files: undefined,
