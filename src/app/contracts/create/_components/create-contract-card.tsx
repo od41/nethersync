@@ -19,7 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -39,89 +39,118 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { MilestoneOptions } from "@/context/contracts";
+import { Checkpoints } from "@/context/contracts";
 
 const successImage = require("@/assets/successful-send.png");
 
-
-
 const msValues = [
-  { id: "start", name: "Start", value: MilestoneOptions.Start },
-  { id: "quarter", name: "Quarter", value: MilestoneOptions.Quarter },
-  { id: "halfway", name: "Halfway", value: MilestoneOptions.Halfway },
+  { id: "start", name: "Start", value: Checkpoints.Start },
+  { id: "quarter", name: "Quarter", value: Checkpoints.Quarter },
+  { id: "halfway", name: "Halfway", value: Checkpoints.Halfway },
   {
     id: "three-quarters",
     name: "ThreeQuarters",
-    value: MilestoneOptions.ThreeQuarters,
+    value: Checkpoints.ThreeQuarters,
   },
-  { id: "end", name: "End", value: MilestoneOptions.End },
+  { id: "end", name: "End", value: Checkpoints.End },
 ];
 
-const FormSchema = z
-  .object({
-    clientsEmail: z.string().email(),
-    title: z.string().min(1, "Title cannot be empty"),
-    description: z.string().optional(),
-    paymentAmount: z.union([
-      z.coerce
-        .number()
-        .positive()
-        .min(0, "Payment amount must be positive")
-        .optional(),
-      z.literal(0), // Allow zero if isPaid is false
-    ]),
-    isPaid: z.boolean(),
-    // list of milsestones
-    // milestones: z
-    //   .array(z.instanceof())
-    //   .min(1, "Please add atleast one milestone")
-    //   .max(4, "You can only have 4 milestones"),
-  })
-  .refine(
-    (data) =>
-      !data.isPaid ||
-      (data.paymentAmount !== undefined && data.paymentAmount > 0),
-    {
-      message:
-        "Payment amount must be greater than zero if the message is paid",
-      path: ["paymentAmount"],
-    }
-  );
+// Define Zod schema for client information
+const clientInfoSchema = z.object({
+  clientEmail: z
+    .string()
+    .email({ message: "Invalid email address" })
+    .min(1, { message: "Email is required" }),
+  title: z.string().min(1, { message: "Title is required" }),
+  description: z.string().optional(),
+});
+
+const TODAY = new Date();
+
+// Define Zod schema for milestone
+const _ms = z.object({
+  description: z.string().min(1, { message: "Description is required" }),
+  dueDate: z.date().min(TODAY, { message: "Due date is required" }),
+  checkpoint: z.enum([
+    Checkpoints.Start,
+    Checkpoints.Quarter,
+    Checkpoints.Halfway,
+    Checkpoints.ThreeQuarters,
+    Checkpoints.End,
+  ]),
+  paymentDue: z.boolean().optional(),
+});
+
+// Define Zod schema for entire form data
+const milestoneSchema = z.object({
+  milestones: z
+    .array(_ms)
+    .min(1, "At least one milestone is required")
+    .max(5, "Maximum 5 milestones allowed"),
+});
+
+// Define Zod schema for entire form data
+const FormSchema = z.object({
+  clientInfo: clientInfoSchema,
+  milestones: z
+    .array(milestoneSchema)
+    .min(1, "At least one milestone is required")
+    .max(5, "Maximum 5 milestones allowed"),
+});
 
 export const CreateContractCard = () => {
   const [sendStatus, setSendStatus] = useState(false);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
-      isPaid: false,
-    },
     mode: "onChange",
   });
   const { formState, watch } = form;
   const { isValid, isDirty, isSubmitting, errors: formErrors } = formState;
   const [formStep, setFormStep] = useState(0);
+  const [page, setPage] = useState(1);
+  const [page1Data, setPage1Data] = useState<ClientInfoFormData | null>(null);
   const TOTAL_FORM_STEPS = 2;
 
-  const { toast } = useToast();
+  const clientInfo = watch("clientInfo");
+  const milestones = watch("milestones");
 
-  const isPaid = watch("isPaid", false);
+  const { toast } = useToast();
 
   const dummyMilestones = [
     {
       id: "dafjahd898",
       description: "Early concepts and moodboard",
-      milestoneCount: MilestoneOptions.Quarter,
+      milestoneCount: Checkpoints.Quarter,
       dueDate: new Date(2024, 6, 20),
     },
     {
       id: "32dafad",
       description: "Final deliverables",
-      milestoneCount: MilestoneOptions.End,
+      milestoneCount: Checkpoints.End,
       dueDate: new Date(2024, 7, 25),
     },
   ];
 
+  const handlePage1Next = (data: ClientInfoFormData) => {
+    setPage1Data(data);
+    setPage(2);
+  };
+
+  const handlePage2Back = () => {
+    setPage(1);
+  };
+
+  const handlePage2Submit = (data: MilestoneFormData) => {
+    const formData = {
+      ...page1Data,
+      ...data,
+    };
+    console.log('Form Submitted:', formData);
+    // You can now send the formData to your backend or perform other actions
+  };
+
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+    console.log(data);
     toast({
       description: "New contract created and sent to your client.",
     });
@@ -130,164 +159,9 @@ export const CreateContractCard = () => {
   const renderView = () => {
     switch (formStep) {
       case 0:
-        return (
-          <>
-            <CardHeader>
-              <CardTitle>New Project</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3">
-              <FormField
-                control={form.control}
-                name="clientsEmail"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="text-xs">
-                      Client&apos;s Email
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="your-email@mail.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="text-xs">Project Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Final files..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="text-xs">Description</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="A note about the contract & deliverables"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-            <CardFooter>
-              <Button onClick={() => setFormStep(1)} className="w-full">
-                Continue
-              </Button>
-            </CardFooter>
-          </>
-        );
+        // return <ClientInfoForm />;
       case 1:
-        return (
-          <>
-            <CardHeader className="flex flex-row items-center gap-2 space-y-0">
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => {
-                  setFormStep(formStep - 1);
-                }}
-                aria-label="Go back"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <CardTitle className="mt-0">Add Milestones</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3">
-              <MilestoneList milestones={dummyMilestones} />
-              <Separator />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="text-xs">Description</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="A note about the contract & deliverables"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-xs">Due date</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="date"
-                          placeholder="When is the milestone due?"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="space-y-1">
-                  <FormLabel htmlFor="milestone-option" className="text-xs">
-                    Milestone option
-                  </FormLabel>
-                  <Select>
-                    <SelectTrigger
-                      id="milestone-option"
-                      aria-label="Milestone option"
-                    >
-                      <SelectValue placeholder="Milestone option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {msValues.map((val) => (
-                        <SelectItem key={`key-${val.id}`} value={val.id}>
-                          {val.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button onClick={() => null} variant="ghost">
-                  Clear
-                </Button>
-                <Button
-                  onClick={() => null}
-                  variant="secondary"
-                  className="w-full"
-                >
-                  Save Milestone
-                </Button>
-              </div>
-              <Separator />
-            </CardContent>
-            <CardFooter>
-              <Button onClick={() => setFormStep(2)} className="w-full">
-                Continue to Review
-              </Button>
-            </CardFooter>
-          </>
-        );
+        // <MilestoneForm />;
       case 2:
         return (
           <>
@@ -326,11 +200,10 @@ export const CreateContractCard = () => {
     return <SuccessDisplay />;
   }
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Card>{renderView()}</Card>
-      </form>
-    </Form>
+    <div>
+      {page === 1 && <ClientInfoForm onNext={handlePage1Next} />}
+      {page === 2 && <MilestoneForm onBack={handlePage2Back} onSubmit={handlePage2Submit} />}
+    </div>
   );
 };
 
@@ -410,3 +283,232 @@ function MilestoneList({ milestones }: { milestones: any }) {
     </>
   );
 }
+
+/* 
+  THE CLIENT FORM
+*/
+
+type ClientInfoFormData = z.infer<typeof clientInfoSchema>;
+
+interface ClientInfoFormProps {
+  onNext: (data: ClientInfoFormData) => void;
+}
+
+const ClientInfoForm = ({ onNext }: ClientInfoFormProps) => {
+  const form = useForm<ClientInfoFormData>({
+    resolver: zodResolver(clientInfoSchema),
+    mode: "onChange",
+  });
+  const { formState, watch } = form;
+  const { isValid, isDirty, isSubmitting, errors: formErrors } = formState;
+
+  return (
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onNext)}>
+          <Card>
+            <CardHeader>
+              <CardTitle>New Project</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              <FormField
+                control={form.control}
+                name="clientEmail"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">
+                      Client&apos;s Email
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="client-email@mail.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">Project Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Final files..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-xs">Description</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="A note about the contract & deliverables"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full">
+                Continue
+              </Button>
+            </CardFooter>
+          </Card>
+        </form>
+      </Form>
+    </>
+  );
+};
+
+/* 
+  THE MILESTONES FORM
+*/
+
+type MilestoneFormData = z.infer<typeof milestoneSchema>;
+
+interface MilestoneFormProps {
+  onBack: () => void;
+  onSubmit: (data: MilestoneFormData) => void;
+}
+
+const MilestoneForm = ({ onBack, onSubmit }: MilestoneFormProps) => {
+  const form = useForm<MilestoneFormData>({
+    resolver: zodResolver(milestoneSchema),
+    mode: "onChange",
+  });
+  const { formState, watch } = form;
+  const { isValid, isDirty, isSubmitting, errors: formErrors } = formState;
+
+  const addedMilestones = watch("milestones");
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "milestones",
+  });
+
+  return (
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <Card>
+            <CardHeader className="flex flex-row items-center gap-2 space-y-0">
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={onBack}
+                aria-label="Go back"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <CardTitle className="mt-0">Add Milestones</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              <MilestoneList milestones={addedMilestones} />
+              <Separator />
+              {fields.map((field, index) => (
+                <div key={field.id}>
+                  <FormField
+                    control={form.control}
+                    name={`milestones.${index}.description` as const}
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-xs">Description</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="A note about the contract & deliverables"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name={`milestones.${index}.dueDate` as const}
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-xs">Due date</FormLabel>
+                          <FormControl>
+                            {/* @ts-ignore */}
+                            <Input
+                              type="date"
+                              placeholder="When is the milestone due?"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="space-y-1">
+                      <FormLabel htmlFor="checkpoint" className="text-xs">
+                        Checkpoint
+                      </FormLabel>
+                      <Select
+                        {...form.register(
+                          `milestones.${index}.checkpoint` as const
+                        )}
+                      >
+                        <SelectTrigger id="checkpoint" aria-label="Checkpoint">
+                          <SelectValue placeholder="Checkpoint" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {msValues.map((val) => (
+                            <SelectItem key={`key-${val.id}`} value={val.id}>
+                              {val.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button onClick={() => null} variant="ghost">
+                      Clear
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        append({
+                          description: "",
+                          dueDate: TODAY,
+                          checkpoint: Checkpoints.Start,
+                          paymentDue: false,
+                        })
+                      }
+                      variant="secondary"
+                      className="w-full"
+                      disabled={fields.length >= 5}
+                    >
+                      Save Milestone
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Separator />
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full">
+                Continue to Review
+              </Button>
+            </CardFooter>
+          </Card>
+        </form>
+      </Form>
+    </>
+  );
+};

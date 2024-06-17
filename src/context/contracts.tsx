@@ -1,18 +1,18 @@
 "use client";
 import { createContext, useEffect, useState } from "react";
 
-export enum MilestoneOptions {
-  Start = 0,
-  Quarter = 25,
-  Halfway = 50,
-  ThreeQuarters = 75,
-  End = 100,
+export enum Checkpoints {
+  Start = "0",
+  Quarter = "25",
+  Halfway = "50",
+  ThreeQuarters = "75",
+  End = "100",
 }
 
 export type NSMilestone = {
   id: string;
   description: string;
-  milestoneCount?: MilestoneOptions;
+  milestoneCount?: Checkpoints;
   dueDate: Date;
   approvalStatus?: boolean;
   completionStatus?: boolean;
@@ -60,7 +60,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
     {
       id: "djsjd324",
       description: "research and ideation",
-      milestoneCount: MilestoneOptions.Start,
+      milestoneCount: Checkpoints.Start,
       dueDate: new Date(1717629066),
       approvalStatus: false,
       completionStatus: false,
@@ -70,7 +70,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
     {
       id: "fgg4422",
       description: "research and ideation",
-      milestoneCount: MilestoneOptions.Halfway,
+      milestoneCount: Checkpoints.Halfway,
       dueDate: new Date(1717629066),
       approvalStatus: false,
       completionStatus: false,
@@ -80,7 +80,7 @@ export function ContractsProvider({ children }: { children: React.ReactNode }) {
     {
       id: "kdkjew984",
       description: "final deliverables",
-      milestoneCount: MilestoneOptions.End,
+      milestoneCount: Checkpoints.End,
       dueDate: new Date(1717629066),
       approvalStatus: false,
       completionStatus: false,
