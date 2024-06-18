@@ -25,9 +25,16 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ContractPreviewSheet } from "./contract-preview-sheet";
 import { useState } from "react";
-import { ArrowLeft, Loader2, Upload, X } from "lucide-react";
+import { ArrowLeft, CalendarIcon, Loader2, Upload, X } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
 
 import axios from "axios";
 import { APILLION_AUTH_SECRET, APILLON_BUCKET_UUID } from "@/client/config";
@@ -40,6 +47,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Checkpoints } from "@/context/contracts";
+import { cn } from "@/lib/utils";
 
 const successImage = require("@/assets/successful-send.png");
 
@@ -81,6 +89,8 @@ const _ms = z.object({
   paymentDue: z.boolean().optional(),
 });
 
+type MilestoneProps = z.infer<typeof _ms>;
+
 // Define Zod schema for entire form data
 const milestoneSchema = z.object({
   milestones: z
@@ -112,24 +122,11 @@ export const CreateContractCard = () => {
   const TOTAL_FORM_STEPS = 2;
 
   const clientInfo = watch("clientInfo");
-  const milestones = watch("milestones");
+  const milestonesData = watch("milestones");
+
+  console.log("msdata", milestonesData);
 
   const { toast } = useToast();
-
-  const dummyMilestones = [
-    {
-      id: "dafjahd898",
-      description: "Early concepts and moodboard",
-      milestoneCount: Checkpoints.Quarter,
-      dueDate: new Date(2024, 6, 20),
-    },
-    {
-      id: "32dafad",
-      description: "Final deliverables",
-      milestoneCount: Checkpoints.End,
-      dueDate: new Date(2024, 7, 25),
-    },
-  ];
 
   const handlePage1Next = (data: ClientInfoFormData) => {
     setPage1Data(data);
@@ -145,7 +142,7 @@ export const CreateContractCard = () => {
       ...page1Data,
       ...data,
     };
-    console.log('Form Submitted:', formData);
+    console.log("Form Submitted:", formData);
     // You can now send the formData to your backend or perform other actions
   };
 
@@ -159,9 +156,9 @@ export const CreateContractCard = () => {
   const renderView = () => {
     switch (formStep) {
       case 0:
-        // return <ClientInfoForm />;
+      // return <ClientInfoForm />;
       case 1:
-        // <MilestoneForm />;
+      // <MilestoneForm />;
       case 2:
         return (
           <>
@@ -179,7 +176,7 @@ export const CreateContractCard = () => {
               <CardTitle className="mt-0">Review Contract</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3">
-              <MilestoneList milestones={dummyMilestones} />
+              {/* <MilestoneList milestones={milestonesData} /> */}
             </CardContent>
             <CardFooter>
               <Button
@@ -202,7 +199,9 @@ export const CreateContractCard = () => {
   return (
     <div>
       {page === 1 && <ClientInfoForm onNext={handlePage1Next} />}
-      {page === 2 && <MilestoneForm onBack={handlePage2Back} onSubmit={handlePage2Submit} />}
+      {page === 2 && (
+        <MilestoneForm onBack={handlePage2Back} onSubmit={handlePage2Submit} />
+      )}
     </div>
   );
 };
@@ -240,21 +239,27 @@ function SuccessDisplay() {
   );
 }
 
-function MilestoneList({ milestones }: { milestones: any }) {
+function MilestoneList({
+  milestones,
+  handleEdit,
+}: {
+  milestones: MilestoneProps[];
+  handleEdit?: (index: number) => void;
+}) {
   return (
     <>
-      {milestones.length < 1 ? (
-        <>Add atleast one milestone</>
+      {!milestones ? (
+        <>No milestones added</>
       ) : (
         <>
-          {milestones.map((milestone: any, index: number) => (
+          {milestones.map((milestone: MilestoneProps, index: number) => (
             <div
               key={`ms-key-${index}`}
               className="flex justify-between items-center bg-muted rounded-md py-4 px-3"
             >
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full text-foreground bg-border uppercase text-[10px] flex items-center justify-center">
-                  {String(milestone.milestoneCount)}%
+                  {String(milestone.checkpoint)}%
                 </div>
                 <div className="grid gap-1">
                   <div className="text-sm">
@@ -263,19 +268,21 @@ function MilestoneList({ milestones }: { milestones: any }) {
                   <div className="text-xs">
                     Due{" "}
                     <span className="text-primary font-bold">
-                      {milestone.dueDate.toDateString()}
+                      {milestone.dueDate.toLocaleDateString("en-US", {
+                        day: "2-digit",
+                        month: "short",
+                      })}
                     </span>
                   </div>
                 </div>
               </div>
-              <div>
-                <Button
-                  onClick={() => console.log(milestone.id)}
-                  variant="link"
-                >
-                  Edit
-                </Button>
-              </div>
+              {handleEdit && (
+                <div>
+                  <Button onClick={() => handleEdit(index)} variant="link">
+                    Edit
+                  </Button>
+                </div>
+              )}
             </div>
           ))}
         </>
@@ -297,6 +304,11 @@ interface ClientInfoFormProps {
 const ClientInfoForm = ({ onNext }: ClientInfoFormProps) => {
   const form = useForm<ClientInfoFormData>({
     resolver: zodResolver(clientInfoSchema),
+    defaultValues: {
+      clientEmail: "",
+      title: "",
+      description: "",
+    },
     mode: "onChange",
   });
   const { formState, watch } = form;
@@ -359,7 +371,7 @@ const ClientInfoForm = ({ onNext }: ClientInfoFormProps) => {
               />
             </CardContent>
             <CardFooter>
-              <Button type="submit" className="w-full">
+              <Button type="submit" disabled={!isValid} className="w-full">
                 Continue
               </Button>
             </CardFooter>
@@ -384,17 +396,55 @@ interface MilestoneFormProps {
 const MilestoneForm = ({ onBack, onSubmit }: MilestoneFormProps) => {
   const form = useForm<MilestoneFormData>({
     resolver: zodResolver(milestoneSchema),
-    mode: "onChange",
+    defaultValues: {
+      milestones: [
+        {
+          description: "Final deliverables",
+          dueDate: TODAY,
+          checkpoint: Checkpoints.End,
+          paymentDue: false,
+        },
+      ],
+    },
+    mode: "onSubmit",
   });
   const { formState, watch } = form;
   const { isValid, isDirty, isSubmitting, errors: formErrors } = formState;
 
+  const [activeField, setActiveField] = useState(0);
   const addedMilestones = watch("milestones");
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "milestones",
   });
+
+  console.log("field", fields);
+
+  function handleMilestoneAppend(args: {
+    description: string;
+    dueDate: Date;
+    checkpoint: Checkpoints;
+    paymentDue: boolean | undefined;
+  }): void {
+    console.log("args", args);
+    append(args);
+    // update active field
+    console.log("af before", activeField);
+    setActiveField(activeField + 1);
+    console.log("af after", activeField);
+  }
+
+  console.log(
+    "milestones watch data",
+    addedMilestones,
+    "activfield",
+    activeField
+  );
+
+  function handleEdit(index: number) {
+    setActiveField(index);
+  }
 
   return (
     <>
@@ -413,96 +463,124 @@ const MilestoneForm = ({ onBack, onSubmit }: MilestoneFormProps) => {
               <CardTitle className="mt-0">Add Milestones</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3">
-              <MilestoneList milestones={addedMilestones} />
+              <MilestoneList
+                milestones={addedMilestones}
+                handleEdit={handleEdit}
+              />
               <Separator />
-              {fields.map((field, index) => (
-                <div key={field.id}>
+              <div className="grid gap-3" key={fields[activeField].id}>
+                <FormField
+                  control={form.control}
+                  name={`milestones.${activeField}.description` as const}
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-xs">Description</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="A note about the contract & deliverables"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
-                    name={`milestones.${index}.description` as const}
+                    name={`milestones.${activeField}.dueDate` as const}
                     render={({ field }) => (
                       <FormItem className="space-y-1">
-                        <FormLabel className="text-xs">Description</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="A note about the contract & deliverables"
-                            {...field}
-                          />
-                        </FormControl>
+                        <FormLabel className="text-xs">Due date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={
+                                (date) => date < TODAY // Can only select dates after "today"
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormDescription>
+                          When is this milestone due?
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name={`milestones.${index}.dueDate` as const}
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel className="text-xs">Due date</FormLabel>
-                          <FormControl>
-                            {/* @ts-ignore */}
-                            <Input
-                              type="date"
-                              placeholder="When is the milestone due?"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                  <div className="space-y-1">
+                    <FormLabel htmlFor="checkpoint" className="text-xs">
+                      Checkpoint
+                    </FormLabel>
+                    <Select
+                      {...form.register(
+                        `milestones.${activeField}.checkpoint` as const
                       )}
-                    />
-
-                    <div className="space-y-1">
-                      <FormLabel htmlFor="checkpoint" className="text-xs">
-                        Checkpoint
-                      </FormLabel>
-                      <Select
-                        {...form.register(
-                          `milestones.${index}.checkpoint` as const
-                        )}
-                      >
-                        <SelectTrigger id="checkpoint" aria-label="Checkpoint">
-                          <SelectValue placeholder="Checkpoint" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {msValues.map((val) => (
-                            <SelectItem key={`key-${val.id}`} value={val.id}>
-                              {val.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button onClick={() => null} variant="ghost">
-                      Clear
-                    </Button>
-                    <Button
-                      onClick={() =>
-                        append({
-                          description: "",
-                          dueDate: TODAY,
-                          checkpoint: Checkpoints.Start,
-                          paymentDue: false,
-                        })
-                      }
-                      variant="secondary"
-                      className="w-full"
-                      disabled={fields.length >= 5}
                     >
-                      Save Milestone
-                    </Button>
+                      <SelectTrigger id="checkpoint" aria-label="Checkpoint">
+                        <SelectValue placeholder="Checkpoint" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {msValues.map((val) => (
+                          <SelectItem key={`key-${val.id}`} value={val.id}>
+                            {val.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-              ))}
+
+                <div className="flex items-center gap-2">
+                  {/* <Button onClick={() => null} variant="ghost">
+                      Clear
+                    </Button> */}
+                  <Button
+                    type="button"
+                    onClick={() =>
+                      handleMilestoneAppend({
+                        description: fields[activeField].description,
+                        dueDate: fields[activeField].dueDate,
+                        checkpoint: fields[activeField].checkpoint,
+                        paymentDue: fields[activeField].paymentDue,
+                      })
+                    }
+                    variant="secondary"
+                    className="w-full"
+                    disabled={fields.length >= 5}
+                  >
+                    Save Milestone
+                  </Button>
+                </div>
+              </div>
               <Separator />
             </CardContent>
             <CardFooter>
-              <Button type="submit" className="w-full">
+              <Button type="submit" disabled={!isValid} className="w-full">
                 Continue to Review
               </Button>
             </CardFooter>
