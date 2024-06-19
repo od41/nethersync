@@ -110,21 +110,10 @@ const FormSchema = z.object({
 
 export const CreateContractCard = () => {
   const [sendStatus, setSendStatus] = useState(false);
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    mode: "onChange",
-  });
-  const { formState, watch } = form;
-  const { isValid, isDirty, isSubmitting, errors: formErrors } = formState;
-  const [formStep, setFormStep] = useState(0);
   const [page, setPage] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [page1Data, setPage1Data] = useState<ClientInfoFormData | null>(null);
-  const TOTAL_FORM_STEPS = 2;
-
-  const clientInfo = watch("clientInfo");
-  const milestonesData = watch("milestones");
-
-  console.log("msdata", milestonesData);
+  const [page2Data, setPage2Data] = useState<MilestoneFormData | null>(null);
 
   const { toast } = useToast();
 
@@ -137,62 +126,25 @@ export const CreateContractCard = () => {
     setPage(1);
   };
 
-  const handlePage2Submit = (data: MilestoneFormData) => {
+  const handlePage2Next = (data: MilestoneFormData) => {
+    setPage2Data(data);
+    setPage(3);
+  };
+
+  const handleSubmit = () => {
     const formData = {
       ...page1Data,
-      ...data,
+      ...page2Data,
     };
     console.log("Form Submitted:", formData);
-    // You can now send the formData to your backend or perform other actions
-  };
-
-  const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    console.log(data);
     toast({
+      title: "Success!",
       description: "New contract created and sent to your client.",
     });
+
+    setSendStatus(true);
   };
 
-  const renderView = () => {
-    switch (formStep) {
-      case 0:
-      // return <ClientInfoForm />;
-      case 1:
-      // <MilestoneForm />;
-      case 2:
-        return (
-          <>
-            <CardHeader className="flex flex-row items-center gap-2 space-y-0">
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => {
-                  setFormStep(formStep - 1);
-                }}
-                aria-label="Go back"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <CardTitle className="mt-0">Review Contract</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3">
-              {/* <MilestoneList milestones={milestonesData} /> */}
-            </CardContent>
-            <CardFooter>
-              <Button
-                type="submit"
-                disabled={!isValid || isSubmitting}
-                className="w-full"
-              >
-                Send to Client
-              </Button>
-            </CardFooter>
-          </>
-        );
-      default:
-        return <div>You&apos;re in the wrong place</div>;
-    }
-  };
   if (sendStatus) {
     return <SuccessDisplay />;
   }
@@ -200,7 +152,57 @@ export const CreateContractCard = () => {
     <div>
       {page === 1 && <ClientInfoForm onNext={handlePage1Next} />}
       {page === 2 && (
-        <MilestoneForm onBack={handlePage2Back} onSubmit={handlePage2Submit} />
+        <MilestoneForm onBack={handlePage2Back} onSubmit={handlePage2Next} />
+      )}
+      {page === 3 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-2 space-y-0">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handlePage2Back}
+              aria-label="Go back"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <CardTitle className="mt-0">Review Contract</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3">
+            {page1Data && (
+              <div className="grid gap-2">
+                <div>
+                  <div className="text-xs">Client&apos;s email</div>
+                  <div>{page1Data.clientEmail}</div>
+                </div>
+
+                <div>
+                  <div className="text-xs">Title</div>
+                  <div>{page1Data.title}</div>
+                </div>
+
+                {page1Data.description && (
+                  <div>
+                    <div className="text-xs">Description</div>
+                    <div>{page1Data.description}</div>
+                  </div>
+                )}
+              </div>
+            )}
+            {page2Data?.milestones && (
+              <MilestoneList milestones={page2Data?.milestones} />
+            )}
+          </CardContent>
+          <CardFooter>
+            <Button
+              type="submit"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="w-full"
+            >
+              {isSubmitting ? <>Loading...</> : <>Send to Client</>}
+            </Button>
+          </CardFooter>
+        </Card>
       )}
     </div>
   );
@@ -311,8 +313,8 @@ const ClientInfoForm = ({ onNext }: ClientInfoFormProps) => {
     },
     mode: "onChange",
   });
-  const { formState, watch } = form;
-  const { isValid, isDirty, isSubmitting, errors: formErrors } = formState;
+  const { formState } = form;
+  const { isValid } = formState;
 
   return (
     <>
@@ -397,54 +399,44 @@ const MilestoneForm = ({ onBack, onSubmit }: MilestoneFormProps) => {
   const form = useForm<MilestoneFormData>({
     resolver: zodResolver(milestoneSchema),
     defaultValues: {
-      milestones: [
-        {
-          description: "Final deliverables",
-          dueDate: TODAY,
-          checkpoint: Checkpoints.End,
-          paymentDue: false,
-        },
-      ],
+      milestones: [],
     },
     mode: "onSubmit",
   });
-  const { formState, watch } = form;
-  const { isValid, isDirty, isSubmitting, errors: formErrors } = formState;
+  const { formState } = form;
+  const { isValid, isSubmitting } = formState;
 
-  const [activeField, setActiveField] = useState(0);
-  const addedMilestones = watch("milestones");
+  const [activeField, setActiveField] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
 
-  const { fields, append, remove } = useFieldArray({
+  const { toast } = useToast();
+
+  const { fields, update, remove } = useFieldArray({
     control: form.control,
     name: "milestones",
   });
 
-  console.log("field", fields);
-
-  function handleMilestoneAppend(args: {
-    description: string;
-    dueDate: Date;
-    checkpoint: Checkpoints;
-    paymentDue: boolean | undefined;
-  }): void {
-    console.log("args", args);
-    append(args);
-    // update active field
-    console.log("af before", activeField);
-    setActiveField(activeField + 1);
-    console.log("af after", activeField);
-  }
-
-  console.log(
-    "milestones watch data",
-    addedMilestones,
-    "activfield",
-    activeField
-  );
+  const handleMilestoneAppend = () => {
+    if (activeField === null) {
+      toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        description: "No milestone data found",
+      });
+      return;
+    }
+    const newMilestone = form.getValues(`milestones.${activeField}`);
+    update(activeField, newMilestone);
+    setActiveField(null); // Reset active field after adding
+  };
 
   function handleEdit(index: number) {
     setActiveField(index);
   }
+
+  const handleNextPage = () => {
+    setPage(2);
+  };
 
   return (
     <>
@@ -463,120 +455,136 @@ const MilestoneForm = ({ onBack, onSubmit }: MilestoneFormProps) => {
               <CardTitle className="mt-0">Add Milestones</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3">
-              <MilestoneList
-                milestones={addedMilestones}
-                handleEdit={handleEdit}
-              />
+              <MilestoneList milestones={fields} handleEdit={handleEdit} />
               <Separator />
-              <div className="grid gap-3" key={fields[activeField].id}>
-                <FormField
-                  control={form.control}
-                  name={`milestones.${activeField}.description` as const}
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-xs">Description</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="A note about the contract & deliverables"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-3">
+              {activeField !== null && (
+                <div className="grid gap-3" key={fields[activeField]?.id}>
                   <FormField
                     control={form.control}
-                    name={`milestones.${activeField}.dueDate` as const}
+                    name={`milestones.${activeField}.description` as const}
                     render={({ field }) => (
                       <FormItem className="space-y-1">
-                        <FormLabel className="text-xs">Due date</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={"outline"}
-                                className={cn(
-                                  "w-full pl-3 text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, "PPP")
-                                ) : (
-                                  <span>Pick a date</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={
-                                (date) => date < TODAY // Can only select dates after "today"
-                              }
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormDescription>
-                          When is this milestone due?
-                        </FormDescription>
+                        <FormLabel className="text-xs">Description</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="A note about the contract & deliverables"
+                            {...field}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <div className="space-y-1">
-                    <FormLabel htmlFor="checkpoint" className="text-xs">
-                      Checkpoint
-                    </FormLabel>
-                    <Select
-                      {...form.register(
-                        `milestones.${activeField}.checkpoint` as const
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField
+                      control={form.control}
+                      name={`milestones.${activeField}.dueDate` as const}
+                      render={({ field }) => (
+                        <FormItem className="space-y-1">
+                          <FormLabel className="text-xs">Due date</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pick a date</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={
+                                  (date) => date < TODAY // Can only select dates after "today"
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    >
-                      <SelectTrigger id="checkpoint" aria-label="Checkpoint">
-                        <SelectValue placeholder="Checkpoint" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {msValues.map((val) => (
-                          <SelectItem key={`key-${val.id}`} value={val.id}>
-                            {val.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                    />
 
-                <div className="flex items-center gap-2">
-                  {/* <Button onClick={() => null} variant="ghost">
+                    <div className="space-y-1">
+                      <FormField
+                        control={form.control}
+                        name={`milestones.${activeField}.checkpoint` as const}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">
+                              Checkpoint
+                            </FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={Checkpoints.End}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Checkpoint" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {msValues.map((val) => (
+                                  <SelectItem
+                                    key={`key-${val.id}`}
+                                    value={val.value}
+                                  >
+                                    {val.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {/* <Button onClick={() => null} variant="ghost">
                       Clear
                     </Button> */}
-                  <Button
-                    type="button"
-                    onClick={() =>
-                      handleMilestoneAppend({
-                        description: fields[activeField].description,
-                        dueDate: fields[activeField].dueDate,
-                        checkpoint: fields[activeField].checkpoint,
-                        paymentDue: fields[activeField].paymentDue,
-                      })
-                    }
-                    variant="secondary"
-                    className="w-full"
-                    disabled={fields.length >= 5}
-                  >
-                    Save Milestone
-                  </Button>
+                    <Button
+                      type="button"
+                      onClick={handleMilestoneAppend}
+                      variant="secondary"
+                      className="w-full"
+                      disabled={fields.length >= 5}
+                    >
+                      Save Milestone
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
+              {activeField === null && (
+                <Button
+                  type="button"
+                  onClick={() => setActiveField(fields.length)}
+                  variant="secondary"
+                  className="w-full"
+                  disabled={fields.length >= 5}
+                >
+                  Add Milestone
+                </Button>
+              )}
               <Separator />
             </CardContent>
             <CardFooter>
