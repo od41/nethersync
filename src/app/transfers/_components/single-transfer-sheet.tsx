@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import { Dot } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { FilesContext, type NSFile } from "@/context/transfers";
+import { TransferContext, type NSFile } from "@/context/transfers";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
@@ -20,7 +20,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 const placeholderImage = require("@/assets/placeholder.jpg");
 
 export const SingleTransferSheet = ({ file }: { file: NSFile }) => {
-  const { file: selectedFile, setFile } = useContext(FilesContext);
+  const { file: selectedFile, setFile } = useContext(TransferContext);
 
   function handleCopy(): void {
     throw new Error("Function not implemented.");

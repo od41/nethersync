@@ -31,7 +31,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 import axios from "axios";
 import { APILLION_AUTH_SECRET, APILLON_BUCKET_UUID } from "@/client/config";
-import { FilesContext, NSFile } from "@/context/transfers";
+import { TransferContext, NSFile } from "@/context/transfers";
 
 import { Progress } from "@/components/ui/progress";
 
@@ -80,7 +80,7 @@ const FormSchema = z
 
 export function SendCard() {
   const { file: selectedFile, setTransfer: setActiveTransferDisplay } =
-    useContext(FilesContext);
+    useContext(TransferContext);
   const [sendStatus, setSendStatus] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([]);
   const form = useForm<z.infer<typeof FormSchema>>({

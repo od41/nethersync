@@ -1,10 +1,10 @@
 import React from "react";
-import { FilesIndexCard } from "./_components/files-index-card";
+import { TransferIndexCard } from "./_components/transfer-index-card";
 
 const FilesIndexPage = ({ params }: { params: { slug: string } }) => {
   return (
     <div className="max-w-[360px]">
-      <FilesIndexCard />
+      <TransferIndexCard slug={params.slug} />
     </div>
   );
 };

@@ -13,12 +13,12 @@ import {
 import { Dot } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { FilesContext } from "@/context/transfers";
+import { TransferContext } from "@/context/transfers";
 import { formatDistanceToNow } from "date-fns";
 import { URL_ROOT } from "@/client/config";
 
 export const PreviewSheet = () => {
-  const { transfer: completedTransfer } = useContext(FilesContext);
+  const { transfer: completedTransfer } = useContext(TransferContext);
   function handleCopy(): void {
     throw new Error("Function not implemented.");
   }

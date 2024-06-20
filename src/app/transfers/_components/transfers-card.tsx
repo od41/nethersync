@@ -10,12 +10,12 @@ import {
 import { SingleTransferSheet } from "./single-transfer-sheet";
 import { useContext, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FilesContext, type NSFile } from "@/context/transfers";
+import { TransferContext, type NSFile } from "@/context/transfers";
 
 const successImage = require("@/assets/successful-send.png");
 
 export function TransfersCard() {
-  const { files } = useContext(FilesContext);
+  const { files } = useContext(TransferContext);
 
   function handleDownload() {
     console.log("submit form data: ");
@@ -44,7 +44,7 @@ export function TransfersCard() {
 }
 
 function FileDisplayItem({ files }: { files: NSFile[] }) {
-  const { file, setFile } = useContext(FilesContext);
+  const { file, setFile } = useContext(TransferContext);
 
   return (
     <ScrollArea className="h-72 w-full">

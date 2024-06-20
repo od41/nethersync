@@ -11,7 +11,7 @@ import {
 import { SingleMilestoneSheet } from "./single-milestone-sheet";
 import { useContext, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FilesContext, type NSFile } from "@/context/transfers";
+import { TransferContext, type NSFile } from "@/context/transfers";
 import { ContractsContext, NSMilestone } from "@/context/contracts";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft } from "lucide-react";

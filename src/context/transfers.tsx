@@ -1,4 +1,6 @@
 "use client";
+import { useToast } from "@/components/ui/use-toast";
+import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 
 export type NSFile = {
@@ -33,7 +35,7 @@ type TransfersContextProps = {
   setFile: (file: NSFile) => void;
   files: NSFile[] | undefined;
   transfer: NSTransfer | undefined;
-  setTransfer: (file: NSTransfer) => void;
+  getTransfer: (slug: string) => void;
 };
 
 const defaultData: TransfersContextProps = {
@@ -41,15 +43,17 @@ const defaultData: TransfersContextProps = {
   setFile: () => {},
   files: undefined,
   transfer: undefined,
-  setTransfer: () => {},
+  getTransfer: () => {},
 };
 
-export const FilesContext = createContext(defaultData);
+export const TransferContext = createContext(defaultData);
 // TODO: Refactor this to be Transfers provider
 export function FilesProvider({ children }: { children: React.ReactNode }) {
   const [file, setFile] = useState<any>(undefined);
   const [transfer, setTransfer] = useState<NSTransfer>();
   const [selected, setSelected] = useState<any>(undefined);
+
+  const { toast } = useToast();
 
   const files: NSFile[] = [
     {
@@ -74,22 +78,38 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
     },
   ];
 
+  const getTransfer = async (slug: string) => {
+    try {
+      const response = await axios.get(`/api/transfers/download/${slug}`);
+      console.log(response.data);
+      setTransfer(response.data);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        description: error.message
+          ? error.message
+          : "Please wait a moment and try again.",
+      });
+    }
+  };
+
   useEffect(() => {
     setFile(files[0]);
     setSelected(files[0].id);
   }, []);
 
   return (
-    <FilesContext.Provider
+    <TransferContext.Provider
       value={{
         file,
         setFile,
         files,
         transfer,
-        setTransfer,
+        getTransfer,
       }}
     >
       {children}
-    </FilesContext.Provider>
+    </TransferContext.Provider>
   );
 }

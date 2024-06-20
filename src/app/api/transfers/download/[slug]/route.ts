@@ -1,18 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/server/config";
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const uuid = searchParams.get('uuid');
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { slug: string } }
+) {
+  const slug = params.slug;
 
-  if (!uuid) {
-    return NextResponse.json({ message: 'UUID is required' }, { status: 400 });
+  if (!slug) {
+    return NextResponse.json({ message: "Slug is required" }, { status: 400 });
   }
 
-  const fileData = await redis.hgetall(uuid);
+  const fileData = await redis.hgetall(slug);
+
+  console.log("filddata", fileData);
 
   if (!fileData) {
-    return NextResponse.json({ message: 'File not found' }, { status: 404 });
+    return NextResponse.json({ message: "File not found" }, { status: 404 });
   }
 
   return NextResponse.json(fileData, { status: 200 });

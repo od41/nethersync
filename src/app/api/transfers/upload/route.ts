@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(request: NextRequest) {
+  // TODO
+  // @ts-ignore
   const session = await getServerSession(authOptions);
 
   if (!session) {

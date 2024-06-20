@@ -7,17 +7,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { FileIndexPreviewSheet } from "./file-index-preview-sheet";
-import { useContext, useState } from "react";
+import { TransferIndexPreviewSheet } from "./transfer-index-preview-sheet";
+import { useContext, useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FilesContext, type NSFile } from "@/context/transfers";
+import { NSTransfer, TransferContext, type NSFile } from "@/context/transfers";
 
 const successImage = require("@/assets/successful-send.png");
 
-export function FilesIndexCard() {
-  const [sendStatus, setSendStatus] = useState(false);
+export function TransferIndexCard({ slug }: { slug: string }) {
+  const { files, transfer, getTransfer } = useContext(TransferContext);
 
-  const { files } = useContext(FilesContext);
+  useEffect(() => {
+    getTransfer(slug);
+    console.log("slug", slug, transfer);
+  }, [slug]);
 
   function handleDownload() {
     console.log("submit form data: ");
@@ -34,7 +37,7 @@ export function FilesIndexCard() {
           <p className="text-md text-muted-foreground">message from user</p>
         </div>
 
-        <FileDisplayItem files={files!} />
+        {transfer && <FileDisplayItem transfer={transfer!} />}
       </CardContent>
       <CardFooter>
         <Button type="submit" onClick={handleDownload} className="w-full">
@@ -45,16 +48,18 @@ export function FilesIndexCard() {
   );
 }
 
-function FileDisplayItem({ files }: { files: NSFile[] }) {
-  const { file, setFile } = useContext(FilesContext);
+function FileDisplayItem({ transfer }: { transfer: NSTransfer }) {
+  const { file, setFile } = useContext(TransferContext);
+  const { files } = transfer;
 
   return (
     <ScrollArea className="h-72 w-full">
       {file ? (
         <div className="flex flex-col gap-2 pb-4 pt-0">
-          {files.map((item) => (
-            <FileIndexPreviewSheet key={`file-${item.id}`} file={item} />
-          ))}
+          {files &&
+            files.map((item) => (
+              <TransferIndexPreviewSheet key={`file-${item.id}`} file={item} />
+            ))}
         </div>
       ) : (
         <div>No files found</div>
