@@ -37,8 +37,11 @@ const DefaultPage = ({ children }: { children: React.ReactNode }) => {
         {/* <div className="h-full w-full  radial-dark-transparent bg-red-300"></div> */}
         <Image
           src={CAROUSEL_IMAGES[2].src}
-          fill={true}
-          className="w-full"
+          // fill={true}
+          layout="fill"
+          objectFit="cover"
+          objectPosition="fixed"
+          className="w-full fixed"
           alt={`Slide ${CAROUSEL_IMAGES[0].owner}`}
         />
       </div>

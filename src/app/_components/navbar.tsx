@@ -105,7 +105,7 @@ export function Navbar() {
       <div className="md:hidden">
         {!user ? (
           <Button onClick={signIn} variant="secondary">
-            Signin
+            Log In
           </Button>
         ) : (
           <DropdownMenu>
@@ -129,12 +129,12 @@ export function Navbar() {
         )}
       </div>
 
-      <div className="md:flex hidden   w-fit px-4 py-2 rounded-md items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-6 bg-background">
+      <div className="md:flex hidden w-fit px-4 py-2 rounded-md items-center justify-end gap-4 md:ml-auto md:gap-6 bg-background">
         {links.map(({ title, href }) => (
           <Link
             key={href}
             href={href}
-            className={`transition-colors hover:text-primary hover:underline hover:underline-offset-4
+            className={`transition-colors text-sm hover:text-primary hover:underline hover:underline-offset-4
                 ${
                   currentPath === href
                     ? "text-primary underline underline-offset-4"
@@ -146,7 +146,7 @@ export function Navbar() {
           </Link>
         ))}
         {!user ? (
-          <Button onClick={signIn}>Signin</Button>
+          <Button onClick={signIn}>Log In</Button>
         ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
