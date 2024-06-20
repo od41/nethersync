@@ -1,7 +1,16 @@
 import { redis } from "@/server/config";
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { v4 as uuidv4 } from "uuid";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   const formData = await request.json();
   const {
     sendersEmail,
@@ -11,15 +20,7 @@ export async function POST(request: NextRequest) {
     isPaid,
     paymentAmount,
   } = formData;
-  console.log(
-    "DEBUG>>>",
-    files,
-    sessionId,
-    sendersEmail,
-    recipientEmail,
-    isPaid,
-    paymentAmount
-  );
+
   if (
     sendersEmail === "" ||
     recipientEmail === "" ||
@@ -36,6 +37,8 @@ export async function POST(request: NextRequest) {
     sendersEmail,
     recipientEmail,
     files,
+    isPaid,
+    paymentAmount: isPaid ? paymentAmount : 0,
     createdAt: new Date().toISOString(),
   });
 
