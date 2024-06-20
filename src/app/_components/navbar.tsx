@@ -3,7 +3,12 @@
 import React, { useContext } from "react";
 import Link from "next/link";
 import { CircleUser, Menu, Package2, Search } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetClose,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
 import {
@@ -41,8 +46,8 @@ export function Navbar() {
   const { signIn, user } = useContext(AuthContext);
 
   return (
-    <header className="sticky top-0 flex h-16 items-center gap-4 px-4 md:px-6 mb-12">
-      <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
+    <header className="sticky top-0 flex w-full justify-between h-16 items-center gap-4 px-4 md:px-6 md:mb-12">
+      <nav className="flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
         <Link
           href="/"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
@@ -66,14 +71,19 @@ export function Navbar() {
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left">
+        <SheetContent side="right">
           <nav className="grid gap-6 text-lg font-medium">
             <Link
               href="/"
               className="flex items-center gap-2 text-lg font-semibold"
             >
-              {/* <Package2 className="h-6 w-6" /> */}
-              <span className="font-bold text-primary uppercase">Keeper</span>
+              <Image
+                src={nsLogo.default.src}
+                // className="h-6 w-6"
+                alt="nethersync logo"
+                width={140}
+                height={22.7}
+              />
             </Link>
             {links.map(({ title, href }) => (
               <Link
@@ -90,10 +100,37 @@ export function Navbar() {
                 {title}
               </Link>
             ))}
+            {!user ? (
+              <Button onClick={signIn}>Signin</Button>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="rounded-full"
+                  >
+                    <CircleUser className="h-5 w-5" />
+                    <span className="sr-only">Toggle user menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Profile</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>Settings</DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link href="mailto:hello@nethersync.xyz">Get Help</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>Logout</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </nav>
+          <SheetClose className="right-0 hidden" />
         </SheetContent>
       </Sheet>
-      <div className="flex w-fit px-4 py-2 rounded-md items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-6 bg-background">
+      <div className="md:flex hidden   w-fit px-4 py-2 rounded-md items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-6 bg-background">
         {links.map(({ title, href }) => (
           <Link
             key={href}
