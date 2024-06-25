@@ -8,9 +8,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SingleTransferSheet } from "./single-transfer-sheet";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TransferContext, type NSFile } from "@/context/transfers";
+import { TransferContext } from "@/context/transfers";
+import { type NSFile } from "@/lib/types";
 
 const successImage = require("@/assets/successful-send.png");
 

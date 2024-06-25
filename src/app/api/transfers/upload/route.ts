@@ -2,7 +2,7 @@ import { redis } from "@/server/config";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { v4 as uuidv4 } from "uuid";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+// import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { NSTransfer } from "@/lib/types";
 
 export async function POST(request: NextRequest) {

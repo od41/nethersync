@@ -12,13 +12,12 @@ import {
 } from "@/components/ui/sheet";
 import { Dot } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { TransferContext, type NSFile } from "@/context/transfers";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ContractsContext, NSContract, NSMilestone } from "@/context/contracts";
+import { ContractsContext } from "@/context/contracts";
+import { type NSMilestone } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 
 const placeholderImage = require("@/assets/placeholder.jpg");

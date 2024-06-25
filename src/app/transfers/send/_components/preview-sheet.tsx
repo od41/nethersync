@@ -74,7 +74,7 @@ export const PreviewSheet = () => {
           <div className="grid gap-4">
             <div>
               <h4 className="text-lg lowercase">
-                {completedTransfer!.receiver}
+                {completedTransfer!.receiversEmail}
               </h4>
               <p className="text-xs uppercase text-muted-foreground">
                 receiver
