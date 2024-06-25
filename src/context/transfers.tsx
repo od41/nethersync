@@ -1,41 +1,17 @@
 "use client";
+import { APILLION_AUTH_SECRET, APILLON_BUCKET_UUID } from "@/client/config";
 import { useToast } from "@/components/ui/use-toast";
+import { NSFile, NSTransfer } from "@/lib/types";
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
-
-export type NSFile = {
-  id: string;
-  selected?: NSFile["id"];
-  name: string;
-  format: string;
-  size: string;
-  uploadTimestamp: number;
-  receiver?: string;
-  isPaid?: boolean;
-  paymentAmount?: number;
-};
-
-export type NSTransfer = {
-  id: string;
-  selected?: NSTransfer["id"];
-  title: string;
-  message?: string;
-  files: NSFile[] | undefined;
-  size: string;
-  downloadCount?: number;
-  sentTimestamp: number;
-  receiver?: string;
-  isPaid?: boolean;
-  paymentStatus?: boolean;
-  paymentAmount?: number;
-};
 
 type TransfersContextProps = {
   file: NSFile | undefined;
   setFile: (file: NSFile) => void;
   files: NSFile[] | undefined;
   transfer: NSTransfer | undefined;
-  getTransfer: (slug: string) => void;
+  setTransfer: (transferData: NSTransfer) => void;
+  getTransfer: (slug: string) => Promise<NSTransfer | undefined>;
 };
 
 const defaultData: TransfersContextProps = {
@@ -43,46 +19,80 @@ const defaultData: TransfersContextProps = {
   setFile: () => {},
   files: undefined,
   transfer: undefined,
-  getTransfer: () => {},
+  setTransfer: () => {},
+  getTransfer: async () => undefined,
 };
 
 export const TransferContext = createContext(defaultData);
 // TODO: Refactor this to be Transfers provider
 export function FilesProvider({ children }: { children: React.ReactNode }) {
   const [file, setFile] = useState<any>(undefined);
+  const [files, setFiles] = useState<NSFile[]>();
   const [transfer, setTransfer] = useState<NSTransfer>();
   const [selected, setSelected] = useState<any>(undefined);
 
   const { toast } = useToast();
 
-  const files: NSFile[] = [
-    {
-      id: "djsjd324",
-      name: "google-deepmind-UHiedDRzjgM-unsplash",
-      format: "jpg",
-      size: "3mb",
-      receiver: "files@nethersync.xyz",
-      isPaid: true,
-      paymentAmount: 320,
-      uploadTimestamp: 1717629066,
-    },
-    {
-      id: "fgg4422",
-      name: "google-deepmind-NJzatVoy-U8-unsplash",
-      format: "jpg",
-      size: "4mb",
-      receiver: "files@nethersync.xyz",
-      isPaid: true,
-      paymentAmount: 320,
-      uploadTimestamp: 1717629066,
-    },
-  ];
-
-  const getTransfer = async (slug: string) => {
+  const getTransfer = async (slug: string): Promise<NSTransfer | undefined> => {
     try {
-      const response = await axios.get(`/api/transfers/download/${slug}`);
-      console.log(response.data);
-      setTransfer(response.data);
+      const transferRecordResponse = await axios.get(
+        `/api/transfers/download/${slug}`
+      );
+      const transferDataResponse: NSTransfer = transferRecordResponse.data;
+      console.log("transfer data", transferRecordResponse.data);
+      // fetch file binary data from ipfs
+      // /storage/buckets/:bucketUuid/files/:fileUuid
+      const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/files?search=${slug}`;
+      const headers = {
+        Authorization: `${APILLION_AUTH_SECRET}`,
+        "Content-Type": "application/json",
+      };
+      const fileBinaryResponse = await axios.get(url, { headers });
+
+      let filesInNs: NSFile[] | undefined = undefined;
+
+      if (fileBinaryResponse.data.data.total > 0) {
+        filesInNs = fileBinaryResponse.data.data.items.map(
+          (item: any, index: number) => {
+            return {
+              id: item.fileUuid,
+              path: item.path,
+              src: item.link,
+              name: item.name,
+              format: item.contentType,
+              uploadTimestamp: item.createTime,
+              size: transferRecordResponse.data.files[index].size,
+            };
+          }
+        );
+      }
+
+      console.log(
+        "fileBinaryResponse",
+        fileBinaryResponse,
+        fileBinaryResponse.data
+      );
+      console.log("filesInNs", filesInNs);
+
+      const transferData: NSTransfer = {
+        id: slug,
+        sendersEmail: transferDataResponse.sendersEmail,
+        receiversEmail: transferDataResponse.receiversEmail,
+        title: transferDataResponse.title,
+        message:
+          transferDataResponse.message === ""
+            ? transferDataResponse.message
+            : undefined,
+        files: filesInNs,
+        size: transferDataResponse.size,
+        downloadCount: transferDataResponse.downloadCount,
+        sentTimestamp: transferDataResponse.sentTimestamp,
+        isPaid: transferDataResponse.isPaid,
+        paymentStatus: transferDataResponse.paymentStatus,
+        paymentAmount: transferDataResponse.paymentAmount,
+      };
+
+      return transferData;
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -94,11 +104,6 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  useEffect(() => {
-    setFile(files[0]);
-    setSelected(files[0].id);
-  }, []);
-
   return (
     <TransferContext.Provider
       value={{
@@ -106,6 +111,7 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
         setFile,
         files,
         transfer,
+        setTransfer,
         getTransfer,
       }}
     >

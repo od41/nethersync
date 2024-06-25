@@ -1,37 +1,6 @@
 "use client";
+import { NSMilestone, NSContract, Checkpoints } from "@/lib/types";
 import { createContext, useEffect, useState } from "react";
-
-export enum Checkpoints {
-  Start = "0",
-  Quarter = "25",
-  Halfway = "50",
-  ThreeQuarters = "75",
-  End = "100",
-}
-
-export type NSMilestone = {
-  id: string;
-  description: string;
-  milestoneCount?: Checkpoints;
-  dueDate: Date;
-  approvalStatus?: boolean;
-  completionStatus?: boolean;
-  payoutAmount?: number;
-  includesPayout?: boolean;
-};
-
-export type NSContract = {
-  id: string;
-  title: string;
-  description?: string;
-  milestones: NSMilestone[] | undefined;
-  clientEmail: string;
-  dateCreated: Date;
-  activeStatus?: boolean;
-  approvalStatus?: boolean;
-  completionStatus?: boolean;
-  paymentAmount: number;
-};
 
 type ContractsContextProps = {
   selectedMilestone: NSMilestone | undefined;

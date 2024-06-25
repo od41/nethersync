@@ -46,7 +46,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Checkpoints } from "@/context/contracts";
+import { Checkpoints } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const successImage = require("@/assets/successful-send.png");

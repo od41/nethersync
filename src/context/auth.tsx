@@ -1,14 +1,6 @@
-import React, { useEffect, createContext, useState } from "react";
+import { AuthTypeProps, UserProps } from "@/lib/types";
+import React, { createContext, useState } from "react";
 
-export type UserProps = {
-  email: string | undefined;
-};
-
-type AuthTypeProps = {
-  signIn: () => void;
-  sessionId: string | undefined;
-  user: UserProps | undefined;
-};
 const defaultProps: AuthTypeProps = {
   signIn: () => {},
   sessionId: undefined,

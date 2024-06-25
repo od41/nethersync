@@ -11,11 +11,12 @@ import {
 } from "@/components/ui/sheet";
 import { Dot } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { TransferContext, type NSFile } from "@/context/transfers";
+import { TransferContext } from "@/context/transfers";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { type NSFile } from "@/lib/types";
 
 const placeholderImage = require("@/assets/placeholder.jpg");
 
@@ -33,8 +34,8 @@ export const TransferIndexPreviewSheet = ({ file }: { file: NSFile }) => {
           <button
             key={file.id}
             className={cn(
-              "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
-              selectedFile!.id === file.id && "bg-muted"
+              "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent w-full",
+              selectedFile && selectedFile!.id === file.id && "bg-muted"
             )}
             onClick={() => setFile(file)}
           >
@@ -43,16 +44,16 @@ export const TransferIndexPreviewSheet = ({ file }: { file: NSFile }) => {
                 <div className="flex items-center gap-2">
                   <div className="font-semibold">{file.name}</div>
                 </div>
-                <div
+                {/* <div
                   className={cn(
                     "ml-auto text-xs",
-                    selectedFile!.id === file.id
+                    selectedFile && selectedFile!.id === file.id
                       ? "text-foreground"
                       : "text-muted-foreground"
                   )}
-                ></div>
+                ></div> */}
               </div>
-              <div className="text-xs font-medium">{file.name}</div>
+              {/* <div className="text-xs font-medium">{file.name}</div> */}
             </div>
 
             <div className="flex gap-0 uppercase text-xs items-center">
@@ -64,56 +65,31 @@ export const TransferIndexPreviewSheet = ({ file }: { file: NSFile }) => {
           <ScrollArea className="h-full pr-4">
             <SheetHeader className="w-full">
               <div className="h-16 mb-12"></div>
-              <SheetTitle className="text-3xl">{selectedFile!.name}</SheetTitle>
+              <SheetTitle className="text-3xl">{file.name}</SheetTitle>
               <SheetDescription>
                 <div className="flex gap-0 uppercase text-xs items-center">
-                  {formatDistanceToNow(
-                    new Date(selectedFile!.uploadTimestamp * 1000),
-                    { addSuffix: true }
-                  )}{" "}
-                  <Dot /> {selectedFile!.size} <Dot /> {selectedFile!.format}
+                  {formatDistanceToNow(new Date(file.uploadTimestamp), {
+                    addSuffix: true,
+                  })}{" "}
+                  <Dot /> {file.size} <Dot /> {file.format}
                 </div>
               </SheetDescription>
             </SheetHeader>
-            <Separator className="my-6" />
-            <div className="flex space-x-2 w-full justify-between">
-              <div>
-                <h4 className="text-lg lowercase">{selectedFile!.receiver}</h4>
-                <p className="text-xs uppercase text-muted-foreground">
-                  recipient mail
-                </p>
-              </div>
 
-              <div>
-                <h4 className="text-lg lowercase">
-                  {selectedFile!.paymentAmount} USDC
-                </h4>
-                <p className="text-xs uppercase text-muted-foreground">
-                  payment amount
-                </p>
-              </div>
-
-              <div>
-                <h4 className="text-lg uppercase">0</h4>
-                <p className="text-xs uppercase text-muted-foreground">
-                  download count
-                </p>
-              </div>
-            </div>
             <Separator className="my-6" />
             <div className="grid gap-4 pb-8">
-              <Image
-                src={String(placeholderImage.default.src)}
-                width={500}
-                height={500}
-                alt={`${selectedFile!.name}-photo preview`}
-              />
+              {file.src && (
+                <Image
+                  src={file.src}
+                  width={500}
+                  height={500}
+                  alt={`${file.name}-photo preview`}
+                />
+              )}
             </div>
           </ScrollArea>
           <SheetFooter className="absolute bottom-0 right-0 py-6 px-12 bg-background w-full flex md:justify-start">
-            <Button>
-              Download &quot;{selectedFile!.name.slice(0, 10)}...&quot;
-            </Button>
+            <Button>Download &quot;{file!.name.slice(0, 10)}...&quot;</Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>

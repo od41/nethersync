@@ -31,9 +31,11 @@ import { useToast } from "@/components/ui/use-toast";
 
 import axios from "axios";
 import { APILLION_AUTH_SECRET, APILLON_BUCKET_UUID } from "@/client/config";
-import { TransferContext, NSFile } from "@/context/transfers";
+import { TransferContext } from "@/context/transfers";
+import { NSFile, NSTransfer } from "@/lib/types";
 
 import { Progress } from "@/components/ui/progress";
+import { v4 as uuidv4 } from "uuid";
 
 const successImage = require("@/assets/successful-send.png");
 
@@ -79,8 +81,7 @@ const FormSchema = z
   );
 
 export function SendCard() {
-  const { file: selectedFile, setTransfer: setActiveTransferDisplay } =
-    useContext(TransferContext);
+  const { setTransfer: setActiveTransferDisplay } = useContext(TransferContext);
   const [sendStatus, setSendStatus] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([]);
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -92,19 +93,25 @@ export function SendCard() {
     mode: "onChange",
   });
   const { formState, watch } = form;
-  const { isValid, isDirty, isSubmitting, errors: formErrors } = formState;
+  const { isValid, isSubmitting, errors: formErrors } = formState;
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const { toast } = useToast();
 
   const isPaid = watch("isPaid", false);
 
-  const storeMetadata = async (fileMetadata: any) => {
-    const response = await axios.post("/api/transfers/upload", fileMetadata);
+  const storeMetadata = async (transferMetadata: NSTransfer) => {
+    const response = await axios.post(
+      "/api/transfers/upload",
+      transferMetadata
+    );
     return response.data;
   };
 
-  const startUploadSession = async (formData: z.infer<typeof FormSchema>) => {
+  const startUploadSession = async (
+    formData: z.infer<typeof FormSchema>,
+    sendId: string
+  ) => {
     const { files, sendersEmail } = formData;
     const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/upload`;
     const headers = {
@@ -114,7 +121,7 @@ export function SendCard() {
     const data = {
       files: files.map((file) => ({
         fileName: file.name,
-        path: `send/${sendersEmail}`,
+        path: `send/${sendId}`,
         contentType: file.type,
       })),
     };
@@ -152,43 +159,31 @@ export function SendCard() {
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     try {
+      const SEND_FILE_ID = uuidv4();
       // Step 1: Initialize upload session and get signed URLs
       const { sessionUuid: sessionId, files: signedUrls } =
-        await startUploadSession(data);
+        await startUploadSession(data, SEND_FILE_ID);
 
       const uploadTimestamp = Date.now();
 
       // Step 2: Upload files to signed URLs
-      const resFiles = await Promise.all(
+      await Promise.all(
         signedUrls.map((signedUrl: any, index: number) =>
           uploadFileToSignedUrl(signedUrl.url, uploadedFiles[index])
         )
       );
 
-      console.log("resfiles", resFiles); // TODO investigate why this is undefined
-
-      const fileMetadata = {
-        files: resFiles,
-        sessionId: sessionId,
-        sendersEmail: data.sendersEmail,
-        recipientEmail: data.receiversEmail,
-        isPaid: data.isPaid,
-        paymentAmount: data.paymentAmount,
-        uploadTimestamp, // TODO: add timestamp
-      };
-
       // Step 3: End the upload session
       await endUploadSession(sessionId);
 
-      // Step 4: Store file data in db
-      await storeMetadata(fileMetadata);
       const totalSize = data.files.reduce(
         (total, file) => total + file.size,
         0
       );
       const filesInNs: NSFile[] = data.files.map((item, index) => {
         return {
-          id: resFiles[index],
+          id: signedUrls[index].fileUuid,
+          path: signedUrls[index].path,
           name: item.name,
           format: item.type,
           uploadTimestamp,
@@ -198,19 +193,25 @@ export function SendCard() {
           paymentAmount: data.paymentAmount,
         };
       });
-      setActiveTransferDisplay({
-        id: sessionId,
+
+      const transferMetaData: NSTransfer = {
+        id: SEND_FILE_ID,
+        sendersEmail: data.sendersEmail,
+        receiversEmail: data.receiversEmail,
         title: data.title,
         message: data.message ? data.message : undefined,
         files: filesInNs,
         size: `${String((totalSize / 1000000).toFixed(2))} MB`,
         downloadCount: 0,
         sentTimestamp: uploadTimestamp,
-        receiver: data.receiversEmail,
         isPaid: data.isPaid,
         paymentStatus: false,
         paymentAmount: data.paymentAmount,
-      });
+      };
+
+      // Step 4: Store file data in db
+      await storeMetadata(transferMetaData);
+      setActiveTransferDisplay(transferMetaData);
       setSendStatus(true);
       toast({
         description: "Your files have been sent.",

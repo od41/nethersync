@@ -1,20 +1,19 @@
-// @ts-nocheck
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { NextApiHandler } from "next";
 
 export const authOptions = {
   providers: [
-    CredentialsProvider({
-      async authorize(credentials) {
-        // Replace this with your actual user authentication logic
-        const user = { id: "1", email: credentials?.email };
-        if (user) {
-          return user;
-        }
-        return null;
-      },
-    }),
+    // CredentialsProvider({
+    //   async authorize(credentials) {
+    //     // Replace this with your actual user authentication logic
+    //     const user = { id: "1", email: credentials?.email };
+    //     if (user) {
+    //       return user;
+    //     }
+    //     return null;
+    //   },
+    // }),
   ],
   session: {
     strategy: "jwt",

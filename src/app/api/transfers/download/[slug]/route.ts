@@ -13,8 +13,6 @@ export async function GET(
 
   const fileData = await redis.hgetall(slug);
 
-  console.log("filddata", fileData);
-
   if (!fileData) {
     return NextResponse.json({ message: "File not found" }, { status: 404 });
   }
