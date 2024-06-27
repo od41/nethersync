@@ -130,20 +130,40 @@ export function SendCard() {
     return response.data.data;
   };
 
-  const uploadFileToSignedUrl = async (url: string, file: FileWithPreview) => {
+  const uploadFileToSignedUrl = async (
+    url: string,
+    fileTracker: FileWithPreview,
+    file: File
+  ) => {
     const headers = {
       "Content-Type": "application/octet-stream",
     };
 
-    await axios.put(url, file, {
-      headers,
-      onUploadProgress: (progressEvent) => {
-        setUploadProgress(0); //always start at zero
-        const progress = (progressEvent.loaded / progressEvent.total!) * 100;
-        setUploadProgress(progress);
-        file.uploadComplete = true;
-      },
-    });
+    console.log("url", url);
+    console.log("file", file);
+
+    try {
+      await axios
+        .put(url, file, {
+          headers,
+          onUploadProgress: (progressEvent) => {
+            setUploadProgress(0); //always start at zero
+            const progress =
+              (progressEvent.loaded / progressEvent.total!) * 100;
+            setUploadProgress(progress);
+            fileTracker.uploadComplete = true;
+          },
+        })
+        .then(() => {
+          setUploadProgress(0); //TODO test this
+        });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: `Error uploading ${file.lastModified}`,
+        description: "Please, wait a moment and try again.",
+      });
+    }
   };
 
   const endUploadSession = async (sessionId: string) => {
@@ -166,10 +186,17 @@ export function SendCard() {
 
       const uploadTimestamp = Date.now();
 
+      console.log("uploadedfiles", uploadedFiles);
+      console.log("data.files", data.files);
+
       // Step 2: Upload files to signed URLs
       await Promise.all(
         signedUrls.map((signedUrl: any, index: number) =>
-          uploadFileToSignedUrl(signedUrl.url, uploadedFiles[index])
+          uploadFileToSignedUrl(
+            signedUrl.url,
+            uploadedFiles[index],
+            data.files[index]
+          )
         )
       );
 
