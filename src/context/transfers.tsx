@@ -81,8 +81,8 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
         title: transferDataResponse.title,
         message:
           transferDataResponse.message === ""
-            ? transferDataResponse.message
-            : undefined,
+            ? undefined
+            : transferDataResponse.message,
         files: filesInNs,
         size: transferDataResponse.size,
         downloadCount: transferDataResponse.downloadCount,

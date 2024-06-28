@@ -14,6 +14,13 @@ import { TransferContext } from "@/context/transfers";
 import { type NSTransfer, type NSFile } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
+import {
+  AtSign,
+  DollarSignIcon,
+  DownloadIcon,
+  MessageCircle,
+} from "lucide-react";
+import { handlePayApi } from "@/api";
 
 const successImage = require("@/assets/successful-send.png");
 
@@ -33,8 +40,18 @@ export function TransferIndexCard({ slug }: { slug: string }) {
     console.log("submit form data: ");
   }
 
+  async function handlePay() {
+    if(!transfer?.id || !transfer?.paymentStatus) return;
+    const amount = Number(transfer?.paymentAmount);
+    const payId = transfer?.id
+    const res = await handlePayApi(payId, amount);
+    if(res) {
+      // toast({message: "Payment successfully"})
+    }
+  }
+
   return (
-    <Card>
+    <Card className="">
       {isLoading ? (
         <>
           <CardHeader>
@@ -61,49 +78,46 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                   )}
                 </div>
 
-                <Separator className="my-2" />
+                <Separator className="my-1" />
 
-                <div className="grid gap-2 w-full">
-                  <div>
-                    <h4 className="text-lg lowercase">
-                      {transfer?.receiversEmail}
-                    </h4>
-                    <p className="text-xs uppercase text-muted-foreground">
-                      recipient mail
-                    </p>
+                <div className="flex justify-between items-center gap-2 w-full">
+                  <div className="text-sm lowercase flex items-center gap-1 text-muted-foreground">
+                    <AtSign className="h-4 w-4 uppercase text-primary" />
+                    {transfer?.receiversEmail}
                   </div>
 
                   {transfer?.isPaid && (
-                    <div>
-                      <h4 className="text-lg">
-                        {transfer?.paymentAmount} USDC
-                      </h4>
-                      <p className="text-xs uppercase text-muted-foreground">
-                        payment amount
-                      </p>
+                    <div className="text-sm lowercase flex items-center gap-1 text-muted-foreground">
+                      <DollarSignIcon className="h-4 w-4 uppercase text-primary" />
+                      {transfer?.paymentAmount}
                     </div>
                   )}
 
-                  <div>
-                    <h4 className="text-lg uppercase">
-                      {transfer?.downloadCount}
-                    </h4>
-                    <p className="text-xs uppercase text-muted-foreground">
-                      download count
-                    </p>
+                  <div className="text-sm lowercase flex items-center gap-1 text-muted-foreground">
+                    <DownloadIcon className="h-4 w-4 uppercase text-primary" />
+                    {transfer?.downloadCount}
                   </div>
                 </div>
+                <Separator className="my-1" />
 
-                <FileDisplayItem transfer={transfer!} />
+                <ScrollArea className="h-75 h-60">
+                  <FileDisplayItem transfer={transfer!} />
+                </ScrollArea>
               </CardContent>
               <CardFooter>
-                <Button
-                  type="submit"
-                  onClick={handleDownload}
-                  className="w-full"
-                >
-                  Download Files
-                </Button>
+                {transfer!.isPaid ? (
+                  <Button type="submit" onClick={handlePay} className="w-full">
+                    Pay
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    onClick={handleDownload}
+                    className="w-full"
+                  >
+                    Download Files
+                  </Button>
+                )}
               </CardFooter>
             </>
           ) : (

@@ -125,9 +125,16 @@ export function SendCard() {
         contentType: file.type,
       })),
     };
-
-    const response = await axios.post(url, data, { headers });
-    return response.data.data;
+    try {
+      const response = await axios.post(url, data, { headers });
+      return response.data.data;
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: `Error uploading files`,
+        description: "Please, wait a moment and try again.",
+      });
+    }
   };
 
   const uploadFileToSignedUrl = async (
@@ -160,7 +167,7 @@ export function SendCard() {
     } catch (error) {
       toast({
         variant: "destructive",
-        title: `Error uploading ${file.lastModified}`,
+        title: `Error uploading ${file.name}`,
         description: "Please, wait a moment and try again.",
       });
     }

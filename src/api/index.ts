@@ -1,0 +1,1 @@
+export { handlePayApi } from "./transfers";

@@ -18,6 +18,10 @@ const config = {
       },
     },
     extend: {
+      maxHeight: {
+        '50vh': '50vh',
+        '75vh': '75vh',
+      },
       backgroundImage: {
         'radial-dark-transparent': 'radial-gradient(circle, #4a4a4a, rgba(74, 74, 74, 0))',
       },
