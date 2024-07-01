@@ -39,9 +39,7 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
         `/api/transfers/download/${slug}`
       );
       const transferDataResponse: NSTransfer = transferRecordResponse.data;
-      console.log("transfer data", transferRecordResponse.data);
-      // fetch file binary data from ipfs
-      // /storage/buckets/:bucketUuid/files/:fileUuid
+
       const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/files?search=${slug}`;
       const headers = {
         Authorization: `${APILLION_AUTH_SECRET}`,
@@ -66,13 +64,6 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
           }
         );
       }
-
-      console.log(
-        "fileBinaryResponse",
-        fileBinaryResponse,
-        fileBinaryResponse.data
-      );
-      console.log("filesInNs", filesInNs);
 
       const transferData: NSTransfer = {
         id: slug,

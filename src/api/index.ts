@@ -1,1 +1,1 @@
-export { handlePayApi } from "./transfers";
+export { handlePayApi } from "./payment";
