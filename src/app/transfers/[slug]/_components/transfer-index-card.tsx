@@ -63,6 +63,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
     const amount = Number(transfer?.paymentAmount);
     const payId = transfer?.id;
+    console.log("addres", transfer?.walletAddress!);
     const res = await handlePayApi(payId, amount, transfer?.walletAddress!);
     if (res) {
       setPayDetails(res.data);

@@ -118,10 +118,10 @@ export function SendCard() {
 
   const storeMetadata = async (transferMetadata: NSTransfer) => {
     const {
+      id: sessionId,
       sendersEmail,
       receiversEmail,
       files,
-      id: sessionId,
       isPaid,
       paymentAmount,
       title,
@@ -130,6 +130,7 @@ export function SendCard() {
       downloadCount,
       sentTimestamp,
       paymentStatus,
+      walletAddress,
     } = transferMetadata;
 
     try {
@@ -147,6 +148,7 @@ export function SendCard() {
         downloadCount,
         sentTimestamp,
         paymentStatus,
+        walletAddress,
       });
     } catch (error: any) {
       throw new Error("Error writing to database. Details: " + error.message);
@@ -190,9 +192,6 @@ export function SendCard() {
     const headers = {
       "Content-Type": "application/octet-stream",
     };
-
-    console.log("url", url);
-    console.log("file", file);
 
     try {
       await axios

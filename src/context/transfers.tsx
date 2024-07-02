@@ -42,9 +42,6 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
       const transferDoc = await getDoc(docRef);
       if (transferDoc.exists()) {
         const transferDataResponse = transferDoc.data() as NSTransfer;
-
-        console.log("tdres", transferDataResponse);
-
         const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/files?search=${slug}`;
         const headers = {
           Authorization: `${APILLION_AUTH_SECRET}`,
@@ -88,6 +85,8 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
           paymentAmount: transferDataResponse.paymentAmount,
           walletAddress: transferDataResponse.walletAddress,
         };
+
+        console.log("tdata", transferData);
 
         return transferData;
       } else {
