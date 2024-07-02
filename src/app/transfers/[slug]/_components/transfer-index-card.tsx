@@ -59,11 +59,11 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
   async function handlePay() {
     if (!transfer?.id || transfer?.paymentStatus) return;
-    toast({ description: "Initiating payment" });
+    toast({ title: "Initiating payment" });
 
     const amount = Number(transfer?.paymentAmount);
     const payId = transfer?.id;
-    const res = await handlePayApi(payId, amount);
+    const res = await handlePayApi(payId, amount, transfer?.walletAddress!);
     if (res) {
       setPayDetails(res.data);
     }

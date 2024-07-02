@@ -52,6 +52,10 @@ const FormSchema = z
     title: z.string().min(1, "Title cannot be empty"),
     message: z.string().optional(),
     isPaid: z.boolean(),
+    walletAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address")
+      .optional(),
     paymentAmount: z.union([
       z.coerce
         .number()
@@ -77,6 +81,15 @@ const FormSchema = z
       message:
         "Payment amount must be greater than zero if the message is paid",
       path: ["paymentAmount"],
+    }
+  )
+  .refine(
+    (data) =>
+      !data.isPaid ||
+      (data.walletAddress !== undefined && data.walletAddress !== ""),
+    {
+      message: "Enter a valid wallet address",
+      path: ["walletAddress"],
     }
   );
 
@@ -241,6 +254,7 @@ export function SendCard() {
         isPaid: data.isPaid,
         paymentStatus: false,
         paymentAmount: data.paymentAmount,
+        walletAddress: data.walletAddress,
       };
 
       // Step 4: Store file data in db
@@ -509,6 +523,24 @@ export function SendCard() {
                                 type="number"
                                 {...field}
                               />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {isPaid && (
+                      <FormField
+                        control={form.control}
+                        name="walletAddress"
+                        render={({ field }) => (
+                          <FormItem className="space-y-1">
+                            <FormLabel className="text-xs">
+                              Wallet Address
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="0x123" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

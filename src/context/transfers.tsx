@@ -81,6 +81,7 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
         isPaid: transferDataResponse.isPaid,
         paymentStatus: transferDataResponse.paymentStatus,
         paymentAmount: transferDataResponse.paymentAmount,
+        walletAddress: transferDataResponse.walletAddress,
       };
 
       return transferData;

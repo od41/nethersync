@@ -26,6 +26,7 @@ export type NSTransfer = {
   isPaid?: boolean;
   paymentStatus?: boolean;
   paymentAmount?: number;
+  walletAddress?: string;
 };
 
 export enum Checkpoints {

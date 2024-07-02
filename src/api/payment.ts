@@ -1,11 +1,12 @@
 import axios from "axios";
 
-export async function handlePayApi(payId: string, payAmount: number) {
+export async function handlePayApi(payId: string, payAmount: number, receiverWalletAddress: string) {
   try {
     const url = "/api/pay/create";
     const payload = {
       payId,
       amount: payAmount,
+      receiverWalletAddress
     };
     const headers = {
       "Content-Type": "application/json",
