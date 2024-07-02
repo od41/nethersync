@@ -3,7 +3,9 @@ import { APILLION_AUTH_SECRET, APILLON_BUCKET_UUID } from "@/client/config";
 import { useToast } from "@/components/ui/use-toast";
 import { NSFile, NSTransfer } from "@/lib/types";
 import axios from "axios";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState } from "react";
+import { collection, doc, getDoc } from "firebase/firestore";
+import { firestore } from "@/lib/firebase";
 
 type TransfersContextProps = {
   file: NSFile | undefined;
@@ -35,56 +37,62 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
 
   const getTransfer = async (slug: string): Promise<NSTransfer | undefined> => {
     try {
-      const transferRecordResponse = await axios.get(
-        `/api/transfers/download/${slug}`
-      );
-      const transferDataResponse: NSTransfer = transferRecordResponse.data;
+      const TRANSFERS_COLLECTION = collection(firestore, "transfers");
+      const docRef = doc(TRANSFERS_COLLECTION, slug);
+      const transferDoc = await getDoc(docRef);
+      if (transferDoc.exists()) {
+        const transferDataResponse = transferDoc.data() as NSTransfer;
 
-      const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/files?search=${slug}`;
-      const headers = {
-        Authorization: `${APILLION_AUTH_SECRET}`,
-        "Content-Type": "application/json",
-      };
-      const fileBinaryResponse = await axios.get(url, { headers });
+        console.log("tdres", transferDataResponse);
 
-      let filesInNs: NSFile[] | undefined = undefined;
+        const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/files?search=${slug}`;
+        const headers = {
+          Authorization: `${APILLION_AUTH_SECRET}`,
+          "Content-Type": "application/json",
+        };
+        const fileBinaryResponse = await axios.get(url, { headers });
 
-      if (fileBinaryResponse.data.data.total > 0) {
-        filesInNs = fileBinaryResponse.data.data.items.map(
-          (item: any, index: number) => {
-            return {
-              id: item.fileUuid,
-              path: item.path,
-              src: item.link,
-              name: item.name,
-              format: item.contentType,
-              uploadTimestamp: item.createTime,
-              size: transferRecordResponse.data.files[index].size,
-            };
-          }
-        );
+        let filesInNs: NSFile[] | undefined = undefined;
+
+        if (fileBinaryResponse.data.data.total > 0) {
+          filesInNs = fileBinaryResponse.data.data.items.map(
+            (item: any, index: number) => {
+              return {
+                id: item.fileUuid,
+                path: item.path,
+                src: item.link,
+                name: item.name,
+                format: item.contentType,
+                uploadTimestamp: item.createTime,
+                size: transferDataResponse.files![index].size,
+              };
+            }
+          );
+        }
+
+        const transferData: NSTransfer = {
+          id: slug,
+          sendersEmail: transferDataResponse.sendersEmail,
+          receiversEmail: transferDataResponse.receiversEmail,
+          title: transferDataResponse.title,
+          message:
+            transferDataResponse.message === ""
+              ? undefined
+              : transferDataResponse.message,
+          files: filesInNs,
+          size: transferDataResponse.size,
+          downloadCount: transferDataResponse.downloadCount,
+          sentTimestamp: transferDataResponse.sentTimestamp,
+          isPaid: transferDataResponse.isPaid,
+          paymentStatus: transferDataResponse.paymentStatus,
+          paymentAmount: transferDataResponse.paymentAmount,
+          walletAddress: transferDataResponse.walletAddress,
+        };
+
+        return transferData;
+      } else {
+        throw new Error("Transfer record not found!");
       }
-
-      const transferData: NSTransfer = {
-        id: slug,
-        sendersEmail: transferDataResponse.sendersEmail,
-        receiversEmail: transferDataResponse.receiversEmail,
-        title: transferDataResponse.title,
-        message:
-          transferDataResponse.message === ""
-            ? undefined
-            : transferDataResponse.message,
-        files: filesInNs,
-        size: transferDataResponse.size,
-        downloadCount: transferDataResponse.downloadCount,
-        sentTimestamp: transferDataResponse.sentTimestamp,
-        isPaid: transferDataResponse.isPaid,
-        paymentStatus: transferDataResponse.paymentStatus,
-        paymentAmount: transferDataResponse.paymentAmount,
-        walletAddress: transferDataResponse.walletAddress,
-      };
-
-      return transferData;
     } catch (error: any) {
       toast({
         variant: "destructive",

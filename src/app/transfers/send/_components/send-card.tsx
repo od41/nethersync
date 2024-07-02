@@ -37,6 +37,9 @@ import { NSFile, NSTransfer } from "@/lib/types";
 import { Progress } from "@/components/ui/progress";
 import { v4 as uuidv4 } from "uuid";
 
+import { firestore } from "@/lib/firebase";
+import { collection, doc, setDoc } from "firebase/firestore";
+
 const successImage = require("@/assets/successful-send.png");
 
 interface FileWithPreview extends File {
@@ -114,11 +117,40 @@ export function SendCard() {
   const isPaid = watch("isPaid", false);
 
   const storeMetadata = async (transferMetadata: NSTransfer) => {
-    const response = await axios.post(
-      "/api/transfers/upload",
-      transferMetadata
-    );
-    return response.data;
+    const {
+      sendersEmail,
+      receiversEmail,
+      files,
+      id: sessionId,
+      isPaid,
+      paymentAmount,
+      title,
+      message,
+      size,
+      downloadCount,
+      sentTimestamp,
+      paymentStatus,
+    } = transferMetadata;
+
+    try {
+      const TRANSFERS_COLLECTION = collection(firestore, "transfers");
+      const docRef = doc(TRANSFERS_COLLECTION, sessionId);
+      await setDoc(docRef, {
+        sendersEmail,
+        receiversEmail,
+        files,
+        isPaid,
+        paymentAmount: isPaid ? paymentAmount : 0,
+        title,
+        message: message ? message : "",
+        size,
+        downloadCount,
+        sentTimestamp,
+        paymentStatus,
+      });
+    } catch (error: any) {
+      throw new Error("Error writing to database. Details: " + error.message);
+    }
   };
 
   const startUploadSession = async (

@@ -17,10 +17,12 @@ export async function POST(req: NextRequest) {
     // Create a new CryptAPI instance
     const coin = "polygon/usdt";
     const callbackUrl = `${BASE_URL}/api/pay/callback`;
-    // const ca = new CryptAPI(coin, myAddress, callbackUrl, params, cryptapiParams)
-    const ca = new CryptAPI(coin, receiverWalletAddress, callbackUrl, {
+    const nsParams = {
       payId,
-    });
+    }
+    const cryptapiParams = { post: 1}
+    // const ca = new CryptAPI(coin, myAddress, callbackUrl, params, cryptapiParams)
+    const ca = new CryptAPI(coin, receiverWalletAddress, callbackUrl, nsParams, cryptapiParams );
     const address = await ca.getAddress();
     const qrCode = await ca.getQrcode(amount);
     const fees = await CryptAPI.getEstimate(coin);
