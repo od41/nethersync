@@ -1,8 +1,8 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from 'firebase/auth';
+import { getAuth } from "firebase/auth";
 import {
   FIREBASE_API_KEY,
   FIREBASE_APP_ID,
@@ -29,6 +29,10 @@ const firebaseConfig = {
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
-export const analytics = getAnalytics(app);
+export const analytics = isSupported()
+  .then((_) => getAnalytics(app))
+  .catch((e: any) =>
+    console.warn("Analytics is not supported in this environment.", e.message)
+  );
 export const firestore = getFirestore(app);
-export const auth = getAuth(app)
+export const auth = getAuth(app);

@@ -17,22 +17,26 @@ export async function POST(req: NextRequest) {
   try {
     // Create a new CryptAPI instance
     const callbackUrl = `${BASE_URL}/api/pay/callback`;
-    const nsParams = {
+    const NSParams = {
       pay_id: payId,
-    }
-    const cryptapiParams = { post: 1}
-    // const ca = new CryptAPI(coin, myAddress, callbackUrl, params, cryptapiParams)
-    const ca = new CryptAPI(AllowedCurrency.POLYGON_USDT, receiverWalletAddress, callbackUrl, nsParams, cryptapiParams );
-    const address = await ca.getAddress();
-    const qrCode = await ca.getQrcode(amount);
-    const fees = await CryptAPI.getEstimate(AllowedCurrency.POLYGON_USDT);
-    // Respond with the payment details
-    return NextResponse.json(
-      { message: "success", fees, qrCode, address },
-      { status: 200 }
+    };
+    const cryptapiParams = { post: 1 };
+
+    const ca = new CryptAPI(
+      AllowedCurrency.POLYGON_USDT,
+      receiverWalletAddress,
+      callbackUrl,
+      NSParams,
+      cryptapiParams
     );
+    const logs = await ca.checkLogs();
+
+    console.log("logs", logs);
+
+    // Respond with details about that payment
+    return NextResponse.json({ message: "success" }, { status: 200 });
   } catch (error) {
-    console.error("Error creating payment:", error);
+    console.error(`Error verifiying payment: ${payId}`, error);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }

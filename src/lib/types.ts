@@ -70,3 +70,25 @@ export type AuthTypeProps = {
   sessionId: string | undefined;
   user: UserProps | undefined;
 };
+
+export enum AllowedCurrency {
+  POLYGON_USDT = "polygon_usdt",
+  POLYGON_USDC = "polygon_usdc",
+  BASE_USDC = "base_usdc",
+}
+
+export type TransactionProps = {
+  isComplete: boolean;
+  pending: boolean;
+  timeStamp: Date;
+  hash: string;
+  amount: number;
+  currency: AllowedCurrency;
+  addressIn: `0x${string}`;
+  addressOut: `0x${string}`;
+  txidOut?: string;
+  confirmations?: number;
+  gasFees?: number;
+  NSFees?: number;
+  price?: number;
+};

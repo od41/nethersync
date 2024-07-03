@@ -21,7 +21,7 @@ import {
   Loader2,
   MessageCircle,
 } from "lucide-react";
-import { handlePayApi } from "@/api";
+import { handlePayApi, handleConfirmPaymentApi } from "@/api";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
@@ -33,7 +33,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import Image from "next/image";
 
 const successImage = require("@/assets/successful-send.png");
 
@@ -71,7 +70,20 @@ export function TransferIndexCard({ slug }: { slug: string }) {
   }
 
   async function handleIHavePaid() {
+    if (!transfer?.id || transfer?.paymentStatus) return;
     setPendingPayConfirmation(true);
+
+    const amount = Number(transfer?.paymentAmount);
+    const payId = transfer?.id;
+    const res = await handleConfirmPaymentApi(
+      payId,
+      amount,
+      transfer?.walletAddress!
+    );
+    if (res) {
+      console.log("payment confirmed", res);
+    }
+    console.log("payment status", res);
   }
 
   return (

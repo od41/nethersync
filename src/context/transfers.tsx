@@ -86,8 +86,6 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
           walletAddress: transferDataResponse.walletAddress,
         };
 
-        console.log("tdata", transferData);
-
         return transferData;
       } else {
         throw new Error("Transfer record not found!");
