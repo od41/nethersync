@@ -17,6 +17,9 @@ export async function handlePayApi(
     };
     const res = await axios.post(url, payload, { headers });
     console.log("pay response", res);
+    if (res.status !== 200) {
+      throw new Error("Couldn't create new payment");
+    }
     return { data: res.data };
   } catch (error) {
     console.error("something went wrong", error);
@@ -30,7 +33,7 @@ export async function handleConfirmPaymentApi(
   receiverWalletAddress: string
 ) {
   try {
-    const url = "/api/pay/check-logs";
+    const url = "/api/pay/verify";
     const payload = {
       payId,
       amount: payAmount,
@@ -40,7 +43,6 @@ export async function handleConfirmPaymentApi(
       "Content-Type": "application/json",
     };
     const res = await axios.post(url, payload, { headers });
-    console.log("logs response", res);
     return { data: res.data };
   } catch (error) {
     console.error("something went wrong", error);

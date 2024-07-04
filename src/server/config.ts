@@ -14,3 +14,5 @@ export const BASE_URL = process.env.BASE_URL!;
 
 export const NETHERSYNC_FEES_WALLET_ADDRESS =
   process.env.NETHERSYNC_FEES_WALLET_ADDRESS!;
+
+export const NS_FEES_PERCENTAGE = 0.1; // ONE PERCENT

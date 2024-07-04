@@ -30,11 +30,20 @@ export async function POST(req: NextRequest) {
       cryptapiParams
     );
     const logs = await ca.checkLogs();
-
-    console.log("logs", logs);
+    if (!logs.callbacks) {
+      return NextResponse.json(
+        { message: "Transaction pending" },
+        { status: 202 }
+      );
+    }
+    const result: string = logs.callbacks[0].result; // result of the latest callback
+    const timeStamp = logs.callbacks[0].last_update;
 
     // Respond with details about that payment
-    return NextResponse.json({ message: "success" }, { status: 200 });
+    return NextResponse.json(
+      { message: "success", result, timeStamp },
+      { status: 200 }
+    );
   } catch (error) {
     console.error(`Error verifiying payment: ${payId}`, error);
     return NextResponse.json(

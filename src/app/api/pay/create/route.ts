@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 // @ts-ignore
 const CryptAPI = require("@cryptapi/api");
-import { BASE_URL, NETHERSYNC_FEES_WALLET_ADDRESS } from "@/server/config";
+import {
+  BASE_URL,
+  NETHERSYNC_FEES_WALLET_ADDRESS,
+  NS_FEES_PERCENTAGE,
+} from "@/server/config";
 import { AllowedCurrency } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
@@ -19,16 +23,34 @@ export async function POST(req: NextRequest) {
     const callbackUrl = `${BASE_URL}/api/pay/callback`;
     const nsParams = {
       pay_id: payId,
-    }
-    const cryptapiParams = { post: 1}
+    };
+    const NSFees = NS_FEES_PERCENTAGE * amount;
+    const totalAmount = amount + NSFees;
+    const cryptapiParams = { post: 1 };
     // const ca = new CryptAPI(coin, myAddress, callbackUrl, params, cryptapiParams)
-    const ca = new CryptAPI(AllowedCurrency.POLYGON_USDT, receiverWalletAddress, callbackUrl, nsParams, cryptapiParams );
+    const ca = new CryptAPI(
+      AllowedCurrency.POLYGON_USDT,
+      receiverWalletAddress,
+      callbackUrl,
+      nsParams,
+      cryptapiParams
+    );
     const address = await ca.getAddress();
-    const qrCode = await ca.getQrcode(amount);
+    const qrCode = await ca.getQrcode(totalAmount);
     const fees = await CryptAPI.getEstimate(AllowedCurrency.POLYGON_USDT);
     // Respond with the payment details
     return NextResponse.json(
-      { message: "success", fees, qrCode, address },
+      {
+        message: "success",
+        totalAmount,
+        NSFees,
+        gasFees: {
+          amount: fees.estimated_cost,
+          amountInFiat: fees.estimated_cost_currency,
+        },
+        payQrCode: qrCode.qr_code,
+        payAddress: address,
+      },
       { status: 200 }
     );
   } catch (error) {

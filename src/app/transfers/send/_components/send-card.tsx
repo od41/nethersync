@@ -237,9 +237,6 @@ export function SendCard() {
 
       const uploadTimestamp = Date.now();
 
-      console.log("uploadedfiles", uploadedFiles);
-      console.log("data.files", data.files);
-
       // Step 2: Upload files to signed URLs
       await Promise.all(
         signedUrls.map((signedUrl: any, index: number) =>

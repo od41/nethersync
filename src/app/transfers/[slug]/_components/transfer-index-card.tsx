@@ -75,15 +75,19 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
     const amount = Number(transfer?.paymentAmount);
     const payId = transfer?.id;
-    const res = await handleConfirmPaymentApi(
+    const res: any = await handleConfirmPaymentApi(
       payId,
       amount,
       transfer?.walletAddress!
     );
-    if (res) {
+    if (res.result === "done") {
+      toast({
+        title: "payment complete",
+        description: `Payment verified on ${res.timeStamp}`,
+      });
+      setPendingPayConfirmation(false);
       console.log("payment confirmed", res);
     }
-    console.log("payment status", res);
   }
 
   return (
@@ -142,7 +146,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                   </ScrollArea>
                 </CardContent>
                 <CardFooter>
-                  {transfer!.isPaid ? (
+                  {transfer!.isPaid && !transfer!.paymentStatus ? (
                     <Dialog
                       open={payDialogOpen}
                       onOpenChange={setPayDialogOpen}
@@ -161,7 +165,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                         <>
                           <DialogContent className="sm:max-w-md">
                             <DialogHeader>
-                              <DialogTitle>Awaiting confirmation</DialogTitle>
+                              <DialogTitle>Awaiting confirmationnn</DialogTitle>
                               <DialogDescription>
                                 Please wait while we verify the payment
                               </DialogDescription>
@@ -175,6 +179,14 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                                     </span>
                                     <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                                   </div>
+                                  <Button // TODO remove this
+                                    type="button"
+                                    onClick={handleIHavePaid}
+                                    size="sm"
+                                    className="px-3"
+                                  >
+                                    I have paid
+                                  </Button>
                                 </>
                               )}
                             </div>
@@ -197,31 +209,65 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                             <DialogHeader>
                               <DialogTitle>Initiate Payment</DialogTitle>
                               <DialogDescription>
-                                To pay make sure you include gas fees and send
-                                no less than the USDT {transfer!.paymentAmount}
+                                Pay the TOTAL AMOUNT to the specified address
+                                then, click &apos;I have paid&apos;
                               </DialogDescription>
                             </DialogHeader>
-                            <div className="flex items-center space-x-2">
+                            <div className="grid gap-3 space-x-2">
                               {payDetails && (
                                 <>
-                                  <div className="grid gap-1">
+                                  <div className="grid gap-1 w-1/2">
                                     <span className="text-xs text-muted-foreground uppercase">
                                       QR code
                                     </span>
                                     <span className="text-sm text-foreground">
                                       <img
-                                        src={`data:image/png;base64,${payDetails.qrCode.qr_code}`}
+                                        src={`data:image/png;base64,${payDetails.payQrCode}`}
                                         alt="Payment QR Code"
                                       />
                                     </span>
                                   </div>
-                                  <div className="grid gap-1">
-                                    <span className="text-xs text-muted-foreground uppercase">
-                                      Pay to
-                                    </span>
-                                    <span className="text-sm text-foreground">
-                                      {payDetails.address}
-                                    </span>
+                                  <div className="grid gap-1 w-full">
+                                    <div>
+                                      <span className="text-xs text-muted-foreground uppercase">
+                                        Pay to
+                                      </span>
+                                      <span className="text-sm text-foreground">
+                                        {payDetails.payAddress}
+                                      </span>
+                                    </div>
+
+                                    <div>
+                                      <span className="text-xs text-muted-foreground uppercase">
+                                        NetherSync Fees
+                                      </span>
+                                      <span className="text-sm text-foreground">
+                                        USDT{" "}
+                                        {(
+                                          payDetails.totalAmount -
+                                          transfer?.paymentAmount!
+                                        ).toFixed(2)}
+                                      </span>
+                                    </div>
+
+                                    <div>
+                                      <span className="text-xs text-muted-foreground uppercase">
+                                        Blockchain Fees
+                                      </span>
+                                      <span className="text-sm text-foreground">
+                                        {payDetails.gasFees.amount} MATIC
+                                        {/* // TODO remove hardcoded value  */}
+                                      </span>
+                                    </div>
+
+                                    <div>
+                                      <span className="text-xs text-muted-foreground uppercase">
+                                        Total Amount
+                                      </span>
+                                      <span className="text-sm text-foreground">
+                                        USDT {payDetails.totalAmount.toFixed(2)}
+                                      </span>
+                                    </div>
                                   </div>
                                 </>
                               )}
