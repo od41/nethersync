@@ -25,7 +25,14 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { PreviewSheet } from "./preview-sheet";
 import { useContext, useState } from "react";
-import { Loader2, Upload, X } from "lucide-react";
+import {
+  Check,
+  CheckCircle,
+  CheckCircle2,
+  Loader2,
+  Upload,
+  X,
+} from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -44,6 +51,7 @@ const successImage = require("@/assets/successful-send.png");
 
 interface FileWithPreview extends File {
   preview: string;
+  progress?: number;
   uploadComplete?: boolean;
 }
 
@@ -110,7 +118,7 @@ export function SendCard() {
   });
   const { formState, watch } = form;
   const { isValid, isSubmitting, errors: formErrors } = formState;
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [currentUploadIndex, setCurrentUploadIndex] = useState(1);
 
   const { toast } = useToast();
 
@@ -140,15 +148,15 @@ export function SendCard() {
         sendersEmail,
         receiversEmail,
         files,
-        isPaid,
-        paymentAmount: isPaid ? paymentAmount : 0,
         title,
-        message: message ? message : "",
         size,
         downloadCount,
         sentTimestamp,
         paymentStatus,
-        walletAddress,
+        isPaid,
+        paymentAmount: isPaid ? paymentAmount : 0,
+        message: message ? message : "blanks",
+        walletAddress: isPaid ? walletAddress : "blanks",
       });
     } catch (error: any) {
       throw new Error("Error writing to database. Details: " + error.message);
@@ -186,28 +194,43 @@ export function SendCard() {
 
   const uploadFileToSignedUrl = async (
     url: string,
-    fileTracker: FileWithPreview,
-    file: File
+    file: File,
+    currentUpload: number
   ) => {
     const headers = {
       "Content-Type": "application/octet-stream",
     };
 
     try {
-      await axios
-        .put(url, file, {
-          headers,
-          onUploadProgress: (progressEvent) => {
-            setUploadProgress(0); //always start at zero
-            const progress =
-              (progressEvent.loaded / progressEvent.total!) * 100;
-            setUploadProgress(progress);
-            fileTracker.uploadComplete = true;
-          },
-        })
-        .then(() => {
-          setUploadProgress(0); //TODO test this
-        });
+      await axios.put(url, file, {
+        headers,
+        onUploadProgress: (progressEvent) => {
+          const progress = (progressEvent.loaded / progressEvent.total!) * 100;
+          const updatedFileUploadProgress = uploadedFiles.map(
+            (uploadedFile, index) => {
+              if (currentUpload == index) {
+                return { ...uploadedFile, progress };
+              } else {
+                return uploadedFile;
+              }
+            }
+          );
+          setUploadedFiles(updatedFileUploadProgress);
+          if (progress > 99) {
+            setCurrentUploadIndex(currentUpload + 1);
+            const completedUploadFiles = uploadedFiles.map(
+              (uploadedFile, index) => {
+                if (currentUpload == index) {
+                  return { ...uploadedFile, uploadComplete: true };
+                } else {
+                  return uploadedFile;
+                }
+              }
+            );
+            setUploadedFiles(completedUploadFiles);
+          }
+        },
+      });
     } catch (error) {
       toast({
         variant: "destructive",
@@ -239,11 +262,11 @@ export function SendCard() {
 
       // Step 2: Upload files to signed URLs
       await Promise.all(
-        signedUrls.map((signedUrl: any, index: number) =>
+        signedUrls.map((signedUrl: any, currentUpload: number) =>
           uploadFileToSignedUrl(
             signedUrl.url,
-            uploadedFiles[index],
-            data.files[index]
+            data.files[currentUpload],
+            currentUpload
           )
         )
       );
@@ -264,8 +287,6 @@ export function SendCard() {
           uploadTimestamp,
           size: `${String((item.size / 1000000).toFixed(2))} MB`,
           receiver: data.receiversEmail,
-          isPaid: data.isPaid,
-          paymentAmount: data.paymentAmount,
         };
       });
 
@@ -293,7 +314,6 @@ export function SendCard() {
         description: "Your files have been sent.",
       });
     } catch (error) {
-      // console.error("Error uploading files:", error);
       toast({
         variant: "destructive",
         title: "Something went wrong",
@@ -405,20 +425,17 @@ export function SendCard() {
                             {isSubmitting && (
                               <>
                                 <Progress
-                                  value={uploadProgress}
+                                  value={file.progress ? file.progress : 0}
                                   className="w-[80%] mx-auto absolute bottom-2 left-1.5 z-10"
                                 />
                                 <div className="aspect-square w-full h-full bg-background absolute top-0 left-0 opacity-40"></div>
                               </>
                             )}
                             {file.uploadComplete && (
-                              <>
-                                <Progress
-                                  value={100}
-                                  className="w-[80%] mx-auto absolute bottom-2 left-1.5 z-10"
-                                />
-                                <div className="aspect-square w-full h-full bg-background absolute top-0 left-0 opacity-40"></div>
-                              </>
+                              <div className="bottom-2 w-5 h-5 absolute -top-1.5 -right-1.5 rounded-full p-0.5 flex items-center justify-center bg-primary">
+                                <Check className="h-3 w-3" />
+                                {/* <div className="aspect-square w-full h-full bg-background absolute top-0 left-0 opacity-40"></div> */}
+                              </div>
                             )}
                             <Image
                               src={file.preview}
@@ -427,14 +444,16 @@ export function SendCard() {
                               height="40"
                               width="40"
                             />
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              className="absolute -top-1.5 -right-1.5 rounded-full p-0.5 h-5 w-5"
-                              onClick={() => handleRemoveFile(index)}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
+                            {!isSubmitting && !sendStatus && (
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                className="absolute -top-1.5 -right-1.5 rounded-full p-0.5 h-5 w-5"
+                                onClick={() => handleRemoveFile(index)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            )}
                             <p>{file.name}</p>
                           </div>
                         ))}
@@ -590,7 +609,7 @@ export function SendCard() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...{" "}
-                  {uploadProgress != undefined && uploadProgress}
+                  {`${currentUploadIndex} of ${uploadedFiles.length}`}
                 </>
               ) : (
                 <>Send Files</>
@@ -611,11 +630,12 @@ function SuccessDisplay() {
   return (
     <>
       <Card className="min-h-[300px]">
-        <CardHeader>
+        <CardHeader className="">
           <Image
             src={String(successImage.default.src)}
-            width={500}
-            height={500}
+            width={200}
+            height={200}
+            className="mx-auto"
             alt="Files sent successfully"
           />
           <CardTitle>All done!</CardTitle>

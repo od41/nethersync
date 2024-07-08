@@ -27,7 +27,7 @@ const CAROUSEL_IMAGES = [
 
 const DefaultPage = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex min-h-screen w-full flex-col">
+    <div className="flex min-h-screen w-full h-full flex-col">
       <Navbar />
       <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-5">
         <div className="col-span-3 md:ml-8 mb-12">{children}</div>
@@ -36,12 +36,14 @@ const DefaultPage = ({ children }: { children: React.ReactNode }) => {
       <div className="w-full absolute top-0 -z-50 flex items-center justify-center min-h-screen h-full radial-dark-transparent">
         {/* <div className="h-full w-full  radial-dark-transparent bg-red-300"></div> */}
         <Image
-          src={CAROUSEL_IMAGES[2].src}
-          // fill={true}
-          layout="fill"
+          src={CAROUSEL_IMAGES[0].src}
+          // width={`${1920}`}
+          // height={`${1080}`}
+          fill={true}
+          // layout="fill"
           objectFit="cover"
-          objectPosition="fixed"
-          className="w-full fixed"
+          // objectPosition="fixed"
+          className="w-full h-full fixed"
           alt={`Slide ${CAROUSEL_IMAGES[0].owner}`}
         />
       </div>
