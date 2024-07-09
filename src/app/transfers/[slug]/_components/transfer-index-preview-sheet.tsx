@@ -42,18 +42,11 @@ export const TransferIndexPreviewSheet = ({ file }: { file: NSFile }) => {
             <div className="flex flex-col gap-1">
               <div className="flex items-center">
                 <div className="flex items-center gap-2">
-                  <div className="font-semibold">{file.name}</div>
+                  <div className="font-semibold w-[260px] truncate">
+                    {file.name}
+                  </div>
                 </div>
-                {/* <div
-                  className={cn(
-                    "ml-auto text-xs",
-                    selectedFile && selectedFile!.id === file.id
-                      ? "text-foreground"
-                      : "text-muted-foreground"
-                  )}
-                ></div> */}
               </div>
-              {/* <div className="text-xs font-medium">{file.name}</div> */}
             </div>
 
             <div className="flex gap-0 uppercase text-xs items-center">

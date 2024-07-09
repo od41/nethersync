@@ -371,12 +371,12 @@ export function SendCard() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Card className="max-h-[70vh]">
+        <Card className="max-h-[84vh] min-h-[40vh] justify-center md:max-h-[70vh]">
           <CardHeader>
             <CardTitle>Upload files</CardTitle>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="max-h-[480px] h-[18rem]">
+            <ScrollArea className="max-h-[480px] h-[23rem] md:h-[18rem]">
               <div className="grid gap-3">
                 <div>
                   <Controller
@@ -629,7 +629,7 @@ function SuccessDisplay() {
   };
   return (
     <>
-      <Card className="min-h-[300px]">
+      <Card className="max-h-[84vh] min-h-[40vh] justify-center md:max-h-[70vh]">
         <CardHeader className="">
           <Image
             src={String(successImage.default.src)}

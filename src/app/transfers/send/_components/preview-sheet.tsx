@@ -1,4 +1,5 @@
-import React, { useContext } from "react";
+"use client";
+import React, { useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -19,8 +20,15 @@ import { URL_ROOT } from "@/client/config";
 
 export const PreviewSheet = () => {
   const { transfer: completedTransfer } = useContext(TransferContext);
-  function handleCopy(): void {
-    throw new Error("Function not implemented.");
+  const [isCopied, setIsCopied] = useState(false);
+  async function handleCopy() {
+    try {
+      const textToCopy = `${URL_ROOT}/transfers/${completedTransfer!.id}`;
+      await navigator.clipboard.writeText(textToCopy);
+      setIsCopied(true);
+    } catch (err) {
+      console.error("Error copying to clipboard:", err);
+    }
   }
 
   if (!completedTransfer) {
@@ -67,7 +75,7 @@ export const PreviewSheet = () => {
               onClick={handleCopy}
               className="shrink-0"
             >
-              Copy Link
+              {isCopied ? "Copied!" : "Copy Link"}
             </Button>
           </div>
           <Separator className="my-6" />

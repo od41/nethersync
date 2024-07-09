@@ -33,8 +33,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import Image from "next/image";
 
-const successImage = require("@/assets/successful-send.png");
+const notFound = require("@/assets/not-found.svg");
 
 export function TransferIndexCard({ slug }: { slug: string }) {
   const { getTransfer } = useContext(TransferContext);
@@ -90,100 +91,99 @@ export function TransferIndexCard({ slug }: { slug: string }) {
     }
   }
 
+  if (isLoading) {
+    return (
+      <Card className="h-[40vh]">
+        <CardHeader className="flex items-center h-full justify-center gap-3">
+          <Loader2 className="mr-2 h-8 w-8 text-primary animate-spin" />
+          <CardTitle className="text-lg">Fetching transfer details</CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <>
-      <Card className="max-h-[80vh] min-h-[40vh] justify-center md:max-h-[70vh]">
-        {isLoading ? (
+      <Card className="max-h-[84vh] min-h-[40vh] justify-center md:max-h-[70vh]">
+        {transfer !== undefined ? (
           <>
-            <CardHeader className="flex items-center h-full justify-center gap-3">
-              <Loader2 className="mr-2 h-8 w-8 text-primary animate-spin" />
-              <CardTitle>Fetching transfer details</CardTitle>
+            <CardHeader>
+              <CardTitle className="text-lg">{transfer?.title}</CardTitle>
+              <div>
+                {transfer?.message && (
+                  <p className="text-sm text-muted-foreground">
+                    {transfer.message}
+                  </p>
+                )}
+              </div>
             </CardHeader>
-          </>
-        ) : (
-          <>
-            {transfer !== undefined ? (
-              <>
-                <CardHeader>
-                  <CardTitle className="text-lg">{transfer?.title}</CardTitle>
-                  <div>
-                    {transfer?.message && (
-                      <p className="text-sm text-muted-foreground">
-                        {transfer.message}
-                      </p>
-                    )}
+            <CardContent className="grid gap-3">
+              <Separator className="my-1" />
+
+              <div className="flex justify-between items-center gap-2 w-full">
+                <div className="text-sm lowercase flex items-center gap-1 text-muted-foreground">
+                  <AtSign className="h-4 w-4 uppercase text-primary" />
+                  {transfer?.receiversEmail}
+                </div>
+
+                {transfer?.isPaid && (
+                  <div className="text-sm lowercase flex items-center gap-1 text-muted-foreground">
+                    <DollarSignIcon className="h-4 w-4 uppercase text-primary" />
+                    {transfer?.paymentAmount}
                   </div>
-                </CardHeader>
-                <CardContent className="grid gap-3">
-                  <Separator className="my-1" />
+                )}
 
-                  <div className="flex justify-between items-center gap-2 w-full">
-                    <div className="text-sm lowercase flex items-center gap-1 text-muted-foreground">
-                      <AtSign className="h-4 w-4 uppercase text-primary" />
-                      {transfer?.receiversEmail}
-                    </div>
-
-                    {transfer?.isPaid && (
-                      <div className="text-sm lowercase flex items-center gap-1 text-muted-foreground">
-                        <DollarSignIcon className="h-4 w-4 uppercase text-primary" />
-                        {transfer?.paymentAmount}
-                      </div>
-                    )}
-
-                    <div className="text-sm lowercase flex items-center gap-1 text-muted-foreground">
-                      <DownloadIcon className="h-4 w-4 uppercase text-primary" />
-                      {transfer?.downloadCount}
-                    </div>
-                  </div>
-                  <Separator className="my-1" />
-                  <FileDisplayItem transfer={transfer!} />
-                </CardContent>
-                <CardFooter>
-                  {transfer!.isPaid && !transfer!.paymentStatus ? (
-                    <Dialog
-                      open={payDialogOpen}
-                      onOpenChange={setPayDialogOpen}
+                <div className="text-sm lowercase flex items-center gap-1 text-muted-foreground">
+                  <DownloadIcon className="h-4 w-4 uppercase text-primary" />
+                  {transfer?.downloadCount}
+                </div>
+              </div>
+              <Separator className="my-1" />
+              <FileDisplayItem transfer={transfer!} />
+            </CardContent>
+            <CardFooter>
+              {transfer!.isPaid && !transfer!.paymentStatus ? (
+                <Dialog open={payDialogOpen} onOpenChange={setPayDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      type="submit"
+                      // onClick={}
+                      className="w-full"
                     >
-                      <DialogTrigger asChild>
-                        <Button
-                          type="submit"
-                          // onClick={}
-                          className="w-full"
-                        >
-                          Pay
-                        </Button>
-                      </DialogTrigger>
+                      Pay
+                    </Button>
+                  </DialogTrigger>
 
-                      {pendingPayConfirmation ? (
-                        <>
-                          <DialogContent className="sm:max-w-md">
-                            <DialogHeader>
-                              <DialogTitle>Awaiting confirmationnn</DialogTitle>
-                              <DialogDescription>
-                                Please wait while we verify the payment
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="flex items-center space-x-2">
-                              {payDetails && (
-                                <>
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-md text-muted-foreground uppercase">
-                                      00:10
-                                    </span>
-                                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                                  </div>
-                                  <Button // TODO remove this
-                                    type="button"
-                                    onClick={handleIHavePaid}
-                                    size="sm"
-                                    className="px-3"
-                                  >
-                                    I have paid
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                            {/* <DialogFooter className="sm:justify-start">
+                  {pendingPayConfirmation ? (
+                    <>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Awaiting confirmationnn</DialogTitle>
+                          <DialogDescription>
+                            Please wait while we verify the payment
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex items-center space-x-2">
+                          {payDetails && (
+                            <>
+                              <div className="flex items-center gap-1">
+                                <span className="text-md text-muted-foreground uppercase">
+                                  00:10
+                                </span>
+                                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                              </div>
+                              <Button // TODO remove this
+                                type="button"
+                                onClick={handleIHavePaid}
+                                size="sm"
+                                className="px-3"
+                              >
+                                I have paid
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                        {/* <DialogFooter className="sm:justify-start">
                               <Button
                                 type="button"
                                 onClick={() => {}}
@@ -194,121 +194,130 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                                 Do something
                               </Button>
                             </DialogFooter> */}
-                          </DialogContent>
-                        </>
-                      ) : (
-                        <>
-                          <DialogContent className="sm:max-w-md">
-                            <DialogHeader>
-                              <DialogTitle>Initiate Payment</DialogTitle>
-                              <DialogDescription>
-                                Pay the TOTAL AMOUNT to the specified address
-                                then, click &apos;I have paid&apos;
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="grid gap-3 space-x-2">
-                              {payDetails && (
-                                <>
-                                  <div className="grid gap-1 w-1/2">
-                                    <span className="text-xs text-muted-foreground uppercase">
-                                      QR code
-                                    </span>
-                                    <span className="text-sm text-foreground">
-                                      <img
-                                        src={`data:image/png;base64,${payDetails.payQrCode}`}
-                                        alt="Payment QR Code"
-                                      />
-                                    </span>
-                                  </div>
-                                  <div className="grid gap-1 w-full">
-                                    <div>
-                                      <span className="text-xs text-muted-foreground uppercase">
-                                        Pay to
-                                      </span>
-                                      <span className="text-sm text-foreground">
-                                        {payDetails.payAddress}
-                                      </span>
-                                    </div>
-
-                                    <div>
-                                      <span className="text-xs text-muted-foreground uppercase">
-                                        NetherSync Fees
-                                      </span>
-                                      <span className="text-sm text-foreground">
-                                        USDT{" "}
-                                        {(
-                                          payDetails.totalAmount -
-                                          transfer?.paymentAmount!
-                                        ).toFixed(2)}
-                                      </span>
-                                    </div>
-
-                                    <div>
-                                      <span className="text-xs text-muted-foreground uppercase">
-                                        Blockchain Fees
-                                      </span>
-                                      <span className="text-sm text-foreground">
-                                        {payDetails.gasFees.amount} MATIC
-                                        {/* // TODO remove hardcoded value  */}
-                                      </span>
-                                    </div>
-
-                                    <div>
-                                      <span className="text-xs text-muted-foreground uppercase">
-                                        Total Amount
-                                      </span>
-                                      <span className="text-sm text-foreground">
-                                        USDT {payDetails.totalAmount.toFixed(2)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                            <DialogFooter className="sm:justify-start">
-                              {payDetails ? (
-                                <Button
-                                  type="button"
-                                  onClick={handleIHavePaid}
-                                  size="sm"
-                                  className="px-3"
-                                >
-                                  I have paid
-                                </Button>
-                              ) : (
-                                <Button
-                                  type="button"
-                                  onClick={handlePay}
-                                  size="sm"
-                                  className="px-3"
-                                >
-                                  Pay now
-                                </Button>
-                              )}
-                            </DialogFooter>
-                          </DialogContent>
-                        </>
-                      )}
-                    </Dialog>
+                      </DialogContent>
+                    </>
                   ) : (
-                    <Button
-                      type="submit"
-                      onClick={handleDownload}
-                      className="w-full"
-                    >
-                      Download Files
-                    </Button>
+                    <>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Initiate Payment</DialogTitle>
+                          <DialogDescription>
+                            Pay the TOTAL AMOUNT to the specified address then,
+                            click &apos;I have paid&apos;
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-3 space-x-2">
+                          {payDetails && (
+                            <>
+                              <div className="grid gap-1 w-1/2">
+                                <span className="text-xs text-muted-foreground uppercase">
+                                  QR code
+                                </span>
+                                <span className="text-sm text-foreground">
+                                  <img
+                                    src={`data:image/png;base64,${payDetails.payQrCode}`}
+                                    alt="Payment QR Code"
+                                  />
+                                </span>
+                              </div>
+                              <div className="grid gap-1 w-full">
+                                <div>
+                                  <span className="text-xs text-muted-foreground uppercase">
+                                    Pay to
+                                  </span>
+                                  <span className="text-sm text-foreground">
+                                    {payDetails.payAddress}
+                                  </span>
+                                </div>
+
+                                <div>
+                                  <span className="text-xs text-muted-foreground uppercase">
+                                    NetherSync Fees
+                                  </span>
+                                  <span className="text-sm text-foreground">
+                                    USDT{" "}
+                                    {(
+                                      payDetails.totalAmount -
+                                      transfer?.paymentAmount!
+                                    ).toFixed(2)}
+                                  </span>
+                                </div>
+
+                                <div>
+                                  <span className="text-xs text-muted-foreground uppercase">
+                                    Blockchain Fees
+                                  </span>
+                                  <span className="text-sm text-foreground">
+                                    {payDetails.gasFees.amount} MATIC
+                                    {/* // TODO remove hardcoded value  */}
+                                  </span>
+                                </div>
+
+                                <div>
+                                  <span className="text-xs text-muted-foreground uppercase">
+                                    Total Amount
+                                  </span>
+                                  <span className="text-sm text-foreground">
+                                    USDT {payDetails.totalAmount.toFixed(2)}
+                                  </span>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        <DialogFooter className="sm:justify-start">
+                          {payDetails ? (
+                            <Button
+                              type="button"
+                              onClick={handleIHavePaid}
+                              size="sm"
+                              className="px-3"
+                            >
+                              I have paid
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              onClick={handlePay}
+                              size="sm"
+                              className="px-3"
+                            >
+                              Pay now
+                            </Button>
+                          )}
+                        </DialogFooter>
+                      </DialogContent>
+                    </>
                   )}
-                </CardFooter>
-              </>
-            ) : (
-              <>
-                <CardHeader>
-                  <CardTitle>We couldn&apos;t find your transfer</CardTitle>
-                </CardHeader>
-                <CardContent>Not found</CardContent>
-              </>
-            )}
+                </Dialog>
+              ) : (
+                <Button
+                  type="submit"
+                  onClick={handleDownload}
+                  className="w-full"
+                >
+                  Download Files
+                </Button>
+              )}
+            </CardFooter>
+          </>
+        ) : (
+          <>
+            <CardHeader className="">
+              <Image
+                src={String(notFound.default.src)}
+                width={200}
+                height={200}
+                className="mx-auto"
+                alt="Files sent successfully"
+              />
+              <CardTitle className="text-center text-lg">
+                Transfer not found
+              </CardTitle>
+              <CardContent className="text-center text-muted-foreground pb-0">
+                Please recheck the link.
+              </CardContent>
+            </CardHeader>
           </>
         )}
       </Card>
@@ -318,15 +327,17 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
 function FileDisplayItem({ transfer }: { transfer: NSTransfer }) {
   return (
-    <ScrollArea className="min-h-fit h-[11rem] w-full w-full">
+    <ScrollArea className="min-h-fit h-[16rem] md:h-[11rem]">
       {transfer.files !== undefined ? (
-        <div className="flex flex-col gap-2 pb-4 pt-0">
+        <div className="grid gap-2 pb-4 pt-0">
           {transfer.files.map((item) => (
             <TransferIndexPreviewSheet key={`file-${item.id}`} file={item} />
           ))}
         </div>
       ) : (
-        <div>No files found</div>
+        <div className="text-center text-muted-foreground font-display text-lg">
+          No files found
+        </div>
       )}
     </ScrollArea>
   );
