@@ -12,7 +12,7 @@ const fontSans = localFont({
   variable: "--font-sans",
 });
 const displaySans = localFont({
-  src: "../assets/noto-serif.ttf",
+  src: "../assets/recoleta-light.ttf",
   variable: "--font-display",
 });
 

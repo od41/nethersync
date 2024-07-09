@@ -92,33 +92,29 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
   return (
     <>
-      <Card className="">
+      <Card className="max-h-[80vh] min-h-[40vh] justify-center md:max-h-[70vh]">
         {isLoading ? (
           <>
-            <CardHeader>
-              <CardTitle>We&apos;re searching for your transfer</CardTitle>
+            <CardHeader className="flex items-center h-full justify-center gap-3">
+              <Loader2 className="mr-2 h-8 w-8 text-primary animate-spin" />
+              <CardTitle>Fetching transfer details</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-3">
-              <h4 className="text-lg">Loading...</h4>
-            </CardContent>
           </>
         ) : (
           <>
             {transfer !== undefined ? (
               <>
                 <CardHeader>
-                  <CardTitle>Download when you&apos;re ready</CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-3">
+                  <CardTitle className="text-lg">{transfer?.title}</CardTitle>
                   <div>
-                    <h4 className="text-lg truncate">{transfer?.title}</h4>
                     {transfer?.message && (
-                      <p className="text-md text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                         {transfer.message}
                       </p>
                     )}
                   </div>
-
+                </CardHeader>
+                <CardContent className="grid gap-3">
                   <Separator className="my-1" />
 
                   <div className="flex justify-between items-center gap-2 w-full">
@@ -140,10 +136,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                     </div>
                   </div>
                   <Separator className="my-1" />
-
-                  <ScrollArea className="h-75 h-60">
-                    <FileDisplayItem transfer={transfer!} />
-                  </ScrollArea>
+                  <FileDisplayItem transfer={transfer!} />
                 </CardContent>
                 <CardFooter>
                   {transfer!.isPaid && !transfer!.paymentStatus ? (
@@ -325,7 +318,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
 function FileDisplayItem({ transfer }: { transfer: NSTransfer }) {
   return (
-    <ScrollArea className="h-72 w-full">
+    <ScrollArea className="min-h-fit h-[11rem] w-full w-full">
       {transfer.files !== undefined ? (
         <div className="flex flex-col gap-2 pb-4 pt-0">
           {transfer.files.map((item) => (

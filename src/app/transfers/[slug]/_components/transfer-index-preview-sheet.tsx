@@ -39,7 +39,7 @@ export const TransferIndexPreviewSheet = ({ file }: { file: NSFile }) => {
             )}
             onClick={() => setFile(file)}
           >
-            <div className="flex w-full flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <div className="flex items-center">
                 <div className="flex items-center gap-2">
                   <div className="font-semibold">{file.name}</div>
