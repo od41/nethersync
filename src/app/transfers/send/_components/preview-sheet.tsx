@@ -17,19 +17,11 @@ import { Input } from "@/components/ui/input";
 import { TransferContext } from "@/context/transfers";
 import { formatDistanceToNow } from "date-fns";
 import { URL_ROOT } from "@/client/config";
+import { handleCopy } from "@/lib/utils";
 
 export const PreviewSheet = () => {
   const { transfer: completedTransfer } = useContext(TransferContext);
   const [isCopied, setIsCopied] = useState(false);
-  async function handleCopy() {
-    try {
-      const textToCopy = `${URL_ROOT}/transfers/${completedTransfer!.id}`;
-      await navigator.clipboard.writeText(textToCopy);
-      setIsCopied(true);
-    } catch (err) {
-      console.error("Error copying to clipboard:", err);
-    }
-  }
 
   if (!completedTransfer) {
     return;
@@ -72,7 +64,10 @@ export const PreviewSheet = () => {
             />
             <Button
               variant="secondary"
-              onClick={handleCopy}
+              onClick={() => {
+                handleCopy(`${URL_ROOT}/transfers/${completedTransfer!.id}`);
+                setIsCopied(true);
+              }}
               className="shrink-0"
             >
               {isCopied ? "Copied!" : "Copy Link"}
