@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   // validate the callback data
   let sig_b64 = req.headers.get("x-ca-signature");
-  console.log("sig_b64", sig_b64);
+
   if (!sig_b64) {
     return NextResponse.json(
       { message: "Unauthorized request. no signature" },
@@ -52,8 +52,6 @@ export async function POST(req: NextRequest) {
       { status: 401 }
     );
   }
-
-  console.log("PAY_ID", payId); //TODO
 
   const processedData = convertToJSON(rawBody);
   const {

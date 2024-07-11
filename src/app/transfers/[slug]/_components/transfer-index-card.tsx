@@ -193,120 +193,132 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                   ) : (
                     <>
                       <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>Payment Details</DialogTitle>
-                          <DialogDescription>
-                            To finalize your download, kindly complete the
-                            payment by sending the amount to the provided
-                            address.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-3 space-x-2">
-                          {payDetails && (
+                        {payDetails ? (
+                          <div className="flex items-center space-x-2">
                             <>
-                              <div className="flex flex-col md:flex-row rounded-md w-full justify-center items-center gap-2">
-                                {/* <span className="text-xs text-muted-foreground uppercase">
-                                  QR code
-                                </span> */}
-                                <div className=" w-3/5">
-                                  <img
-                                    src={`data:image/png;base64,${payDetails.payQrCode}`}
-                                    alt="Payment QR Code"
-                                  />
-                                </div>
-
-                                <Alert variant="default">
-                                  <AlertCircle className="h-4 w-4" />
-                                  <AlertTitle className="text-sm">
-                                    Polygon (or MATIC) Network{" "}
-                                  </AlertTitle>
-                                  <AlertDescription className="text-xs">
-                                    Only send USDT on the Polygon (or MATIC)
-                                    network. If sent to another network, we
-                                    won&apos;t be able to recover the funds
-                                  </AlertDescription>
-                                </Alert>
-                              </div>
-
-                              <div className="grid gap-1 w-full">
-                                <span className="text-xs text-muted-foreground uppercase">
-                                  Pay to
-                                </span>
-                                <div className="text-sm text-foreground flex flex-col gap-2 md:gap-0 md:flex-row md:items-center justify-between w-full">
-                                  <span className="w-[280px] text-clip overflow-x-scroll">
-                                    {payDetails.payAddress}{" "}
-                                  </span>
-
-                                  <span>
-                                    <Button
-                                      variant="outline"
-                                      size="icon"
-                                      onClick={() => {
-                                        handleCopy(payDetails.payAddress);
-                                        setIsCopied(true);
-                                      }}
-                                    >
-                                      {isCopied ? (
-                                        <CheckCheckIcon className="h-3 w-3" />
-                                      ) : (
-                                        <CopyIcon className="h-3 w-3" />
-                                      )}
-                                    </Button>
-                                  </span>
-                                </div>
-                              </div>
-                              <Separator className="my-1" />
-
-                              <div className="grid gap-1 w-full">
-                                <div className="w-full flex items-center justify-between">
-                                  <span className="text-xs text-muted-foreground uppercase">
-                                    NetherSync Fees
-                                  </span>
-                                  <span className="text-sm text-foreground">
-                                    <span className="text-xs">$</span>{" "}
-                                    {(
-                                      payDetails.totalAmount -
-                                      transfer?.paymentAmount!
-                                    ).toFixed(2)}
-                                  </span>
-                                </div>
-
-                                <div className="w-full flex items-center justify-between">
-                                  <span className="text-xs text-muted-foreground uppercase">
-                                    Network Fees
-                                  </span>
-                                  <span className="text-sm text-foreground">
-                                    {payDetails.gasFees.amount}{" "}
-                                    <span className="text-xs">MATIC</span>
-                                    {/* // TODO remove hardcoded value  */}
-                                  </span>
-                                </div>
-
-                                <Separator className="my-2" />
-
-                                <div className="w-full flex items-center justify-between">
-                                  <span className="text-xs text-muted-foreground uppercase">
-                                    Total Amount
-                                  </span>
-                                  <span className="text-sm text-foreground">
-                                    <span className="text-xs">$</span>{" "}
-                                    {payDetails.totalAmount.toFixed(2)}
-                                  </span>
-                                </div>
+                              <div className="flex items-center justify-center w-full py-3 gap-1">
+                                <Loader2 className="ml-2 h-8 w-8 text-primary animate-spin" />
                               </div>
                             </>
-                          )}
-                        </div>
-                        <DialogFooter className="sm:justify-start">
-                          <Button
-                            type="button"
-                            onClick={handleIHavePaid}
-                            variant="outline"
-                            className="w-full"
-                          >
-                            I have paid
-                          </Button>
-                        </DialogFooter>
+                          </div>
+                        ) : (
+                          <>
+                            <DialogHeader>
+                              <DialogTitle>Payment Details</DialogTitle>
+                              <DialogDescription>
+                                To finalize your download, kindly complete the
+                                payment by sending the amount to the provided
+                                address.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-3 space-x-2">
+                              {payDetails && (
+                                <>
+                                  <div className="flex flex-col md:flex-row rounded-md w-full justify-center items-center gap-2">
+                                    {/* <span className="text-xs text-muted-foreground uppercase">
+                                  QR code
+                                </span> */}
+                                    <div className=" w-3/5">
+                                      <img
+                                        src={`data:image/png;base64,${payDetails.payQrCode}`}
+                                        alt="Payment QR Code"
+                                      />
+                                    </div>
+
+                                    <Alert variant="default">
+                                      <AlertCircle className="h-4 w-4" />
+                                      <AlertTitle className="text-sm">
+                                        Polygon (or MATIC) Network{" "}
+                                      </AlertTitle>
+                                      <AlertDescription className="text-xs">
+                                        Only send USDT on the Polygon (or MATIC)
+                                        network. If sent to another network, we
+                                        won&apos;t be able to recover the funds
+                                      </AlertDescription>
+                                    </Alert>
+                                  </div>
+
+                                  <div className="grid gap-1 w-full">
+                                    <span className="text-xs text-muted-foreground uppercase">
+                                      Pay to
+                                    </span>
+                                    <div className="text-sm text-foreground flex flex-col gap-2 md:gap-0 md:flex-row md:items-center justify-between w-full">
+                                      <span className="w-[280px] text-clip overflow-x-scroll">
+                                        {payDetails.payAddress}{" "}
+                                      </span>
+
+                                      <span>
+                                        <Button
+                                          variant="outline"
+                                          size="icon"
+                                          onClick={() => {
+                                            handleCopy(payDetails.payAddress);
+                                            setIsCopied(true);
+                                          }}
+                                        >
+                                          {isCopied ? (
+                                            <CheckCheckIcon className="h-3 w-3" />
+                                          ) : (
+                                            <CopyIcon className="h-3 w-3" />
+                                          )}
+                                        </Button>
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <Separator className="my-1" />
+
+                                  <div className="grid gap-1 w-full">
+                                    <div className="w-full flex items-center justify-between">
+                                      <span className="text-xs text-muted-foreground uppercase">
+                                        NetherSync Fees
+                                      </span>
+                                      <span className="text-sm text-foreground">
+                                        <span className="text-xs">$</span>{" "}
+                                        {(
+                                          payDetails.totalAmount -
+                                          transfer?.paymentAmount!
+                                        ).toFixed(2)}
+                                      </span>
+                                    </div>
+
+                                    <div className="w-full flex items-center justify-between">
+                                      <span className="text-xs text-muted-foreground uppercase">
+                                        Network Fees
+                                      </span>
+                                      <span className="text-sm text-foreground">
+                                        {payDetails.gasFees.amount}{" "}
+                                        <span className="text-xs">MATIC</span>
+                                        {/* // TODO remove hardcoded value  */}
+                                      </span>
+                                    </div>
+
+                                    <Separator className="my-2" />
+
+                                    <div className="w-full flex items-center justify-between">
+                                      <span className="text-xs text-muted-foreground uppercase">
+                                        Total Amount
+                                      </span>
+                                      <span className="text-sm text-foreground">
+                                        <span className="text-xs">$</span>{" "}
+                                        {payDetails.totalAmount.toFixed(2)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                            <DialogFooter className="sm:justify-start">
+                              <Button
+                                type="button"
+                                onClick={handleIHavePaid}
+                                variant="outline"
+                                className="w-full"
+                              >
+                                I have paid
+                              </Button>
+                            </DialogFooter>
+                          </>
+                        )}
                       </DialogContent>
                     </>
                   )}
