@@ -53,7 +53,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 bg-transparent flex w-full justify-between h-16 items-center gap-4 px-4 md:px-6 md:mb-12">
-      <Popover>
+      {/* <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
             <Menu className="h-5 w-5" />
@@ -83,7 +83,7 @@ export function Navbar() {
             ))}
           </nav>
         </PopoverContent>
-      </Popover>
+      </Popover> */}
       <nav className="flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
         <Link
           href="/"
@@ -102,7 +102,7 @@ export function Navbar() {
         </Link>
       </nav>
 
-      <div className="md:hidden">
+      {/* <div className="md:hidden">
         {!user ? (
           <Button onClick={signIn} variant="secondary">
             Log In
@@ -127,7 +127,7 @@ export function Navbar() {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-      </div>
+      </div> */}
 
       <div className="md:flex hidden w-fit px-4 py-2 rounded-md items-center justify-end gap-4 md:ml-auto md:gap-6 bg-background">
         {links.map(({ title, href }) => (
@@ -145,7 +145,7 @@ export function Navbar() {
             {title}
           </Link>
         ))}
-        {!user ? (
+        {/* {!user ? (
           <Button onClick={signIn}>Log In</Button>
         ) : (
           <DropdownMenu>
@@ -166,8 +166,16 @@ export function Navbar() {
               <DropdownMenuItem>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        )}
+        )} */}
       </div>
+      <Button variant="outline" asChild>
+        <Link
+          href={"/about"}
+          className={`transition-colors text-muted-foreground hover:text-primary hover:underline hover:underline-offset-4 shrink-0 md:hidden`}
+        >
+          About
+        </Link>
+      </Button> 
     </header>
   );
 }
