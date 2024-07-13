@@ -27,19 +27,19 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-const nsLogo = require("@/assets/logo-dark.png");
+const nsLogo = require("@/assets/logo-light.png");
 
 const links: { title: string; href: string; description: string }[] = [
-  {
-    title: "Transfers",
-    href: "/transfers",
-    description: "Transfer history",
-  },
-  {
-    title: "Contracts",
-    href: "/contracts",
-    description: "Contracts",
-  },
+  // {
+  //   title: "Transfers",
+  //   href: "/transfers",
+  //   description: "Transfer history",
+  // },
+  // {
+  //   title: "Contracts",
+  //   href: "/contracts",
+  //   description: "Contracts",
+  // },
   {
     title: "About",
     href: "/about",
@@ -52,7 +52,7 @@ export function Navbar() {
   const { signIn, user } = useContext(AuthContext);
 
   return (
-    <header className="sticky top-0 md:bg-transparent bg-background flex w-full justify-between h-16 items-center gap-4 px-4 md:px-6 md:mb-12">
+    <header className="sticky top-0 bg-transparent flex w-full justify-between h-16 items-center gap-4 px-4 md:px-6 md:mb-12">
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">

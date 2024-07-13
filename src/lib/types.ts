@@ -92,3 +92,14 @@ export type TransactionProps = {
   NSFees?: number;
   price?: number;
 };
+
+export type TransferAlertProps = {
+  receiversEmail: string;
+  sendersEmail: string;
+  title: string;
+  downloadLink: string;
+  message?: string;
+  receiverWalletAddress?: string;
+  paymentWalletAddress?: string;
+  paymentAmount?: number;
+};

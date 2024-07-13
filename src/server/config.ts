@@ -9,3 +9,5 @@ export const NETHERSYNC_FEES_WALLET_ADDRESS =
   process.env.NETHERSYNC_FEES_WALLET_ADDRESS!;
 
 export const NS_FEES_PERCENTAGE = 0.1; // ONE PERCENT
+
+export const RESEND_API_KEY = process.env.RESEND_API_KEY!;

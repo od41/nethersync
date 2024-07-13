@@ -25,19 +25,16 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { PreviewSheet } from "./preview-sheet";
 import { useContext, useState } from "react";
-import {
-  Check,
-  CheckCircle,
-  CheckCircle2,
-  Loader2,
-  Upload,
-  X,
-} from "lucide-react";
+import { Check, Loader2, Upload, X } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 
 import axios from "axios";
-import { APILLION_AUTH_SECRET, APILLON_BUCKET_UUID } from "@/client/config";
+import {
+  APILLION_AUTH_SECRET,
+  APILLON_BUCKET_UUID,
+  URL_ROOT,
+} from "@/client/config";
 import { TransferContext } from "@/context/transfers";
 import { NSFile, NSTransfer } from "@/lib/types";
 
@@ -155,8 +152,8 @@ export function SendCard() {
         paymentStatus,
         isPaid,
         paymentAmount: isPaid ? paymentAmount : 0,
-        message: message ? message : "blanks",
-        walletAddress: isPaid ? walletAddress : "blanks",
+        message: message ? message : "",
+        walletAddress: isPaid ? walletAddress : "",
       });
     } catch (error: any) {
       throw new Error("Error writing to database. Details: " + error.message);
@@ -308,10 +305,27 @@ export function SendCard() {
 
       // Step 4: Store file data in db
       await storeMetadata(transferMetaData);
+
+      // Step 5: Send email alert to receiver
+      const sendAlertUrl = `/api/alerts/new-transfer`;
+      const alertOptions = {
+        receiversEmail: data.receiversEmail,
+        sendersEmail: data.sendersEmail,
+        title: data.title,
+        message: data.message ? data.message : "",
+        downloadLink: `${URL_ROOT}/transfers/${SEND_FILE_ID}`,
+        paymentWalletAddress: data.isPaid ? data.walletAddress : "",
+        paymentAmount: data.isPaid ? data.paymentAmount : 0,
+      };
+      const response = await axios.post(sendAlertUrl, alertOptions, {});
+      if (response.status != 200) {
+        throw new Error("Error when trying to send alert, we'll keep trying.");
+      }
       setActiveTransferDisplay(transferMetaData);
       setSendStatus(true);
       toast({
-        description: "Your files have been sent.",
+        title: "Success 😄",
+        description: `The files are on their way to ${data.receiversEmail}.`,
       });
     } catch (error) {
       toast({
