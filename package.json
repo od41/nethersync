@@ -11,6 +11,7 @@
   "dependencies": {
     "@cryptapi/api": "^1.1.0",
     "@hookform/resolvers": "^3.4.2",
+    "@lit-protocol/lit-node-client": "^6.1.1",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",

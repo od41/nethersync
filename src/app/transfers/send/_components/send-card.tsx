@@ -44,6 +44,13 @@ import { v4 as uuidv4 } from "uuid";
 import { firestore } from "@/lib/firebase";
 import { collection, doc, setDoc } from "firebase/firestore";
 
+import {
+  credentialNFTContract,
+  litNodeClient,
+  litProtocolChain,
+} from "@/lib/lit-protocol";
+import * as LitJsSdk from "@lit-protocol/lit-node-client";
+
 const successImage = require("@/assets/successful-send.png");
 
 interface FileWithPreview extends File {
@@ -248,9 +255,54 @@ export function SendCard() {
     return response.data;
   };
 
+  const encryptFiles = async (file: File, receiverAddress: `0x${string}`) => {
+    // then get the authSig
+    await litNodeClient.connect();
+    const sessionSigs = await LitJsSdk.generateSessionKeyPair({
+      chain: litProtocolChain,
+      litNodeClient,
+      resourceAbilityRequests: [],
+    });
+    // TODO mint and issue nft to user who's RECEIVING the file
+    const decryptNFTId = "01";
+
+    const accessControlConditions = [
+      {
+        contractAddress: credentialNFTContract,
+        standardContractType: "ERC721",
+        chain: litProtocolChain,
+        method: "ownerOf",
+        parameters: [decryptNFTId],
+        returnValueTest: {
+          comparator: "=",
+          value: receiverAddress,
+        },
+      },
+    ];
+
+    const { ciphertext, dataToEncryptHash } =
+      await LitJsSdk.encryptFileAndZipWithMetadata({
+        accessControlConditions,
+        sessionSigs,
+        chain: litProtocolChain,
+        file: file,
+        litNodeClient: litNodeClient,
+        readme: "Use IPFS CID of this file to decrypt it",
+      });
+    return { ciphertext, dataToEncryptHash };
+  };
+
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+    // generate unique ID for the transfer
+    const SEND_FILE_ID = uuidv4();
+
+    // encrypt files
+    const encryptFilesResponse = await Promise.all(
+      data.files.map((file, index) =>
+        encryptFiles(file, data.walletAddress as `0x${string}`)
+      )
+    );
     try {
-      const SEND_FILE_ID = uuidv4();
       // Step 1: Initialize upload session and get signed URLs
       const { sessionUuid: sessionId, files: signedUrls } =
         await startUploadSession(data, SEND_FILE_ID);
