@@ -1,11 +1,9 @@
 "use client";
 import React from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { FilesProvider } from "./transfers";
 import { ContractsProvider } from "./contracts";
 import AuthProvider from "./auth";
-
-const queryClient = new QueryClient();
+import { Providers as Web3Provider } from "./providers";
 
 export const ApplicationProvider = ({
   children,
@@ -14,11 +12,11 @@ export const ApplicationProvider = ({
 }) => {
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClient}>
+      <Web3Provider>
         <ContractsProvider>
           <FilesProvider>{children}</FilesProvider>
         </ContractsProvider>
-      </QueryClientProvider>
+      </Web3Provider>
     </AuthProvider>
   );
 };
