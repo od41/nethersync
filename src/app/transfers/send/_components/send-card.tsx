@@ -38,7 +38,7 @@ import {
   URL_ROOT,
 } from "@/client/config";
 import { TransferContext } from "@/context/transfers";
-import { NSTransfer } from "@/lib/types";
+import { EncryptedFile, NSFile, NSTransfer } from "@/lib/types";
 
 import { Progress } from "@/components/ui/progress";
 import { v4 as uuidv4 } from "uuid";
@@ -47,8 +47,10 @@ import { firestore } from "@/lib/firebase";
 import { collection, doc, setDoc } from "firebase/firestore";
 
 import { initLitClient, encryptFile } from "@/lib/lit-protocol";
-import * as LitJsSdk from "@lit-protocol/lit-node-client";
 import { useEthersSigner } from "@/lib/ethers-signer";
+
+import { useAccount } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const successImage = require("@/assets/successful-send.png");
 
@@ -109,6 +111,7 @@ const FormSchema = z
 
 export function SendCard() {
   const { setTransfer: setActiveTransferDisplay } = useContext(TransferContext);
+  const { isConnected } = useAccount();
   const [sendStatus, setSendStatus] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<FileWithPreview[]>([]);
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -167,11 +170,8 @@ export function SendCard() {
     }
   };
 
-  const startUploadSession = async (
-    formData: z.infer<typeof FormSchema>,
-    sendId: string
-  ) => {
-    const { files, sendersEmail } = formData;
+  const startUploadSession = async (files: EncryptedFile[], sendId: string) => {
+    // const { files } = formData;
     const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/upload`;
     const headers = {
       Authorization: `${APILLION_AUTH_SECRET}`,
@@ -179,26 +179,28 @@ export function SendCard() {
     };
     const data = {
       files: files.map((file) => ({
-        fileName: file.name,
+        fileName: file.metadata.name,
         path: `send/${sendId}`,
-        contentType: file.type,
+        contentType: "application/octet-stream", // file is encrypted
       })),
     };
     try {
       const response = await axios.post(url, data, { headers });
       return response.data.data;
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: `Error uploading files`,
-        description: "Please, wait a moment and try again.",
+        description: error.message
+          ? error.message
+          : "Please, wait a moment and try again.",
       });
     }
   };
 
   const uploadFileToSignedUrl = async (
     url: string,
-    file: File,
+    file: EncryptedFile,
     currentUpload: number
   ) => {
     const headers = {
@@ -238,7 +240,7 @@ export function SendCard() {
     } catch (error) {
       toast({
         variant: "destructive",
-        title: `Error uploading ${file.name}`,
+        title: `Error uploading ${file.metadata.name}`,
         description: "Please, wait a moment and try again.",
       });
     }
@@ -255,7 +257,7 @@ export function SendCard() {
     return response.data;
   };
 
-  const hanldeEncryptFiles = async (file: File) => {
+  const handleEncryptFiles = async (file: File) => {
     // init litnodeclient
     const litNodeClient = await initLitClient();
     const encryptedResult = await encryptFile(
@@ -263,107 +265,112 @@ export function SendCard() {
       litNodeClient!,
       signer as Signer
     );
-    console.log("within encryption", file);
+    const res = { ...encryptedResult, metadata: file };
 
-    return encryptedResult!;
+    return res as EncryptedFile;
   };
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+    if (!isConnected) {
+      toast({
+        title: "Wallet not connected",
+        description: "Please connect a wallet and try again",
+      });
+      return;
+    }
     // generate unique ID for the transfer
     const SEND_FILE_ID = uuidv4();
 
     // encrypt files
     const encryptFilesResponse = await Promise.all(
-      data.files.map((file, index) => hanldeEncryptFiles(file))
+      data.files.map((file) => handleEncryptFiles(file))
     );
 
-    console.log("encryptFilesResponse", SEND_FILE_ID, encryptFilesResponse);
+    try {
+      // Step 1: Initialize upload session and get signed URLs
+      const { sessionUuid: sessionId, files: signedUrls } =
+        await startUploadSession(encryptFilesResponse, SEND_FILE_ID);
 
-    // try {
-    //   // Step 1: Initialize upload session and get signed URLs
-    //   const { sessionUuid: sessionId, files: signedUrls } =
-    //     await startUploadSession(data, SEND_FILE_ID);
+      const uploadTimestamp = Date.now();
 
-    //   const uploadTimestamp = Date.now();
+      // Step 2: Upload files to signed URLs
+      await Promise.all(
+        signedUrls.map((signedUrl: any, currentUpload: number) =>
+          uploadFileToSignedUrl(
+            signedUrl.url,
+            encryptFilesResponse[currentUpload],
+            currentUpload
+          )
+        )
+      );
 
-    //   // Step 2: Upload files to signed URLs
-    //   await Promise.all(
-    //     signedUrls.map((signedUrl: any, currentUpload: number) =>
-    //       uploadFileToSignedUrl(
-    //         signedUrl.url,
-    //         data.files[currentUpload],
-    //         currentUpload
-    //       )
-    //     )
-    //   );
+      // Step 3: End the upload session
+      await endUploadSession(sessionId);
 
-    //   // Step 3: End the upload session
-    //   await endUploadSession(sessionId);
+      const totalSize = data.files.reduce(
+        (total, file) => total + file.size,
+        0
+      );
+      const filesInNs: NSFile[] = data.files.map((item, index) => {
+        return {
+          id: signedUrls[index].fileUuid,
+          path: signedUrls[index].path,
+          name: item.name,
+          format: item.type,
+          uploadTimestamp,
+          size: `${String((item.size / 1000000).toFixed(2))} MB`,
+          receiver: data.receiversEmail,
+        };
+      });
 
-    //   const totalSize = data.files.reduce(
-    //     (total, file) => total + file.size,
-    //     0
-    //   );
-    //   const filesInNs: NSFile[] = data.files.map((item, index) => {
-    //     return {
-    //       id: signedUrls[index].fileUuid,
-    //       path: signedUrls[index].path,
-    //       name: item.name,
-    //       format: item.type,
-    //       uploadTimestamp,
-    //       size: `${String((item.size / 1000000).toFixed(2))} MB`,
-    //       receiver: data.receiversEmail,
-    //     };
-    //   });
+      const transferMetaData: NSTransfer = {
+        id: SEND_FILE_ID,
+        sendersEmail: data.sendersEmail,
+        receiversEmail: data.receiversEmail,
+        title: data.title,
+        message: data.message ? data.message : undefined,
+        files: filesInNs,
+        size: `${String((totalSize / 1000000).toFixed(2))} MB`,
+        downloadCount: 0,
+        sentTimestamp: uploadTimestamp,
+        isPaid: data.isPaid,
+        paymentStatus: false,
+        paymentAmount: data.paymentAmount,
+        walletAddress: data.walletAddress,
+      };
 
-    //   const transferMetaData: NSTransfer = {
-    //     id: SEND_FILE_ID,
-    //     sendersEmail: data.sendersEmail,
-    //     receiversEmail: data.receiversEmail,
-    //     title: data.title,
-    //     message: data.message ? data.message : undefined,
-    //     files: filesInNs,
-    //     size: `${String((totalSize / 1000000).toFixed(2))} MB`,
-    //     downloadCount: 0,
-    //     sentTimestamp: uploadTimestamp,
-    //     isPaid: data.isPaid,
-    //     paymentStatus: false,
-    //     paymentAmount: data.paymentAmount,
-    //     walletAddress: data.walletAddress,
-    //   };
+      // Step 4: Store file data in db
+      await storeMetadata(transferMetaData);
 
-    //   // Step 4: Store file data in db
-    //   await storeMetadata(transferMetaData);
-
-    //   // Step 5: Send email alert to receiver
-    //   const sendAlertUrl = `/api/alerts/new-transfer`;
-    //   const alertOptions = {
-    //     receiversEmail: data.receiversEmail,
-    //     sendersEmail: data.sendersEmail,
-    //     title: data.title,
-    //     message: data.message ? data.message : "",
-    //     downloadLink: `${URL_ROOT}/transfers/${SEND_FILE_ID}`,
-    //     paymentWalletAddress: data.isPaid ? data.walletAddress : "",
-    //     paymentAmount: data.isPaid ? data.paymentAmount : 0,
-    //   };
-    //   const response = await axios.post(sendAlertUrl, alertOptions, {});
-    //   if (response.status != 200) {
-    //     throw new Error("Error when trying to send alert, we'll keep trying.");
-    //   }
-    //   setActiveTransferDisplay(transferMetaData);
-    //   setSendStatus(true);
-    //   toast({
-    //     title: "Success 😄",
-    //     description: `The files are on their way to ${data.receiversEmail}.`,
-    //   });
-    // } catch (error) {
-    //   toast({
-    //     variant: "destructive",
-    //     title: "Something went wrong",
-    //     // @ts-ignore
-    //     description: (error as Error).message || error!.shortMessage,
-    //   });
-    // }
+      // Step 5: Send email alert to receiver
+      const sendAlertUrl = `/api/alerts/new-transfer`;
+      const alertOptions = {
+        receiversEmail: data.receiversEmail,
+        sendersEmail: data.sendersEmail,
+        title: data.title,
+        message: data.message ? data.message : "",
+        downloadLink: `${URL_ROOT}/transfers/${SEND_FILE_ID}`,
+        paymentWalletAddress: data.isPaid ? data.walletAddress : "",
+        paymentAmount: data.isPaid ? data.paymentAmount : 0,
+      };
+      const response = await axios.post(sendAlertUrl, alertOptions, {});
+      if (response.status != 200) {
+        throw new Error("Error when trying to send alert, we'll keep trying.");
+      }
+      setActiveTransferDisplay(transferMetaData);
+      setSendStatus(true);
+      toast({
+        title: "Success 😄",
+        description: `The files are on their way to ${data.receiversEmail}.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        // @ts-ignore
+        description: (error as Error).message || error!.shortMessage,
+      });
+    }
   };
 
   const handleDrop = (
@@ -465,15 +472,16 @@ export function SendCard() {
                       <div className="grid grid-cols-4 gap-2">
                         {uploadedFiles.map((file, index) => (
                           <div key={index} className="my-2 relative ">
-                            {isSubmitting && (
-                              <>
-                                <Progress
-                                  value={file.progress ? file.progress : 0}
-                                  className="w-[80%] mx-auto absolute bottom-2 left-1.5 z-10"
-                                />
-                                <div className="aspect-square w-full h-full bg-background absolute top-0 left-0 opacity-40"></div>
-                              </>
-                            )}
+                            {isSubmitting ||
+                              (false && ( // TODO progress bar is buggy
+                                <>
+                                  <Progress
+                                    value={file.progress ? file.progress : 0}
+                                    className="w-[80%] mx-auto absolute bottom-2 left-1.5 z-10"
+                                  />
+                                  <div className="aspect-square w-full h-full bg-background absolute top-0 left-0 opacity-40"></div>
+                                </>
+                              ))}
                             {file.uploadComplete && (
                               <div className="bottom-2 w-5 h-5 absolute -top-1.5 -right-1.5 rounded-full p-0.5 flex items-center justify-center bg-primary">
                                 <Check className="h-3 w-3" />
@@ -644,20 +652,24 @@ export function SendCard() {
             </ScrollArea>
           </CardContent>
           <CardFooter>
-            <Button
-              type="submit"
-              disabled={!isValid || isSubmitting}
-              className="w-full"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...{" "}
-                  {`${currentUploadIndex} of ${uploadedFiles.length}`}
-                </>
-              ) : (
-                <>Send Files</>
-              )}
-            </Button>
+            {isConnected ? (
+              <Button
+                type="submit"
+                disabled={!isValid || isSubmitting}
+                className="w-full"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...{" "}
+                    {`${currentUploadIndex} of ${uploadedFiles.length}`}
+                  </>
+                ) : (
+                  <>Send Files</>
+                )}
+              </Button>
+            ) : (
+              <ConnectButton /> // TODO style connect button to fit theme
+            )}
           </CardFooter>
         </Card>
       </form>
@@ -684,7 +696,7 @@ function SuccessDisplay() {
           <CardTitle>All done!</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
-          Your files have been sent - it’ll be available for the next 14 days.
+          Your files are on their way 🚀.
         </CardContent>
         <CardFooter className="grid gap-3">
           <PreviewSheet />

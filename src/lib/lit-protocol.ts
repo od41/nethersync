@@ -27,7 +27,6 @@ export const initLitClient = async () => {
   try {
     const client = new LitJsSdk.LitNodeClient(litJsConfig);
     await client.connect();
-    console.log("connected", client);
     return client;
   } catch (error) {
     console.error("error connecting client", error);
@@ -119,9 +118,6 @@ export const encryptFile = async (
       },
       litNodeClient
     );
-
-    console.log("cipher", ciphertext);
-    console.log("dataToEncryptHash", dataToEncryptHash);
 
     return {
       ciphertext,
