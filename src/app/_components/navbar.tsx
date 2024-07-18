@@ -26,6 +26,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount } from "wagmi";
 
 const nsLogo = require("@/assets/logo-light.png");
 
@@ -50,6 +52,7 @@ const links: { title: string; href: string; description: string }[] = [
 export function Navbar() {
   const currentPath = usePathname();
   const { signIn, user } = useContext(AuthContext);
+  const { isConnected } = useAccount();
 
   return (
     <header className="sticky top-0 bg-transparent flex w-full justify-between h-16 items-center gap-4 px-4 md:px-6 md:mb-12">
@@ -145,6 +148,7 @@ export function Navbar() {
             {title}
           </Link>
         ))}
+        <ConnectButton />
         {/* {!user ? (
           <Button onClick={signIn}>Log In</Button>
         ) : (
@@ -175,7 +179,7 @@ export function Navbar() {
         >
           About
         </Link>
-      </Button> 
+      </Button>
     </header>
   );
 }

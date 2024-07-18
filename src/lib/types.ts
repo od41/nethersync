@@ -103,3 +103,9 @@ export type TransferAlertProps = {
   paymentWalletAddress?: string;
   paymentAmount?: number;
 };
+
+export type EncryptedFile = {
+  ciphertext: string;
+  dataToEncryptHash: string;
+  metadata?: any;
+};

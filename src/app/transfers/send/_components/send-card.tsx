@@ -29,6 +29,8 @@ import { Check, Loader2, Upload, X } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 
+import { Signer } from "ethers";
+
 import axios from "axios";
 import {
   APILLION_AUTH_SECRET,
@@ -36,7 +38,7 @@ import {
   URL_ROOT,
 } from "@/client/config";
 import { TransferContext } from "@/context/transfers";
-import { NSFile, NSTransfer } from "@/lib/types";
+import { NSTransfer } from "@/lib/types";
 
 import { Progress } from "@/components/ui/progress";
 import { v4 as uuidv4 } from "uuid";
@@ -44,12 +46,9 @@ import { v4 as uuidv4 } from "uuid";
 import { firestore } from "@/lib/firebase";
 import { collection, doc, setDoc } from "firebase/firestore";
 
-import {
-  credentialNFTContract,
-  litNodeClient,
-  litProtocolChain,
-} from "@/lib/lit-protocol";
+import { initLitClient, encryptFile } from "@/lib/lit-protocol";
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
+import { useEthersSigner } from "@/lib/ethers-signer";
 
 const successImage = require("@/assets/successful-send.png");
 
@@ -125,6 +124,7 @@ export function SendCard() {
   const [currentUploadIndex, setCurrentUploadIndex] = useState(1);
 
   const { toast } = useToast();
+  const signer = useEthersSigner();
 
   const isPaid = watch("isPaid", false);
 
@@ -255,41 +255,17 @@ export function SendCard() {
     return response.data;
   };
 
-  const encryptFiles = async (file: File, receiverAddress: `0x${string}`) => {
-    // then get the authSig
-    await litNodeClient.connect();
-    const sessionSigs = await LitJsSdk.generateSessionKeyPair({
-      chain: litProtocolChain,
-      litNodeClient,
-      resourceAbilityRequests: [],
-    });
-    // TODO mint and issue nft to user who's RECEIVING the file
-    const decryptNFTId = "01";
+  const hanldeEncryptFiles = async (file: File) => {
+    // init litnodeclient
+    const litNodeClient = await initLitClient();
+    const encryptedResult = await encryptFile(
+      file,
+      litNodeClient!,
+      signer as Signer
+    );
+    console.log("within encryption", file);
 
-    const accessControlConditions = [
-      {
-        contractAddress: credentialNFTContract,
-        standardContractType: "ERC721",
-        chain: litProtocolChain,
-        method: "ownerOf",
-        parameters: [decryptNFTId],
-        returnValueTest: {
-          comparator: "=",
-          value: receiverAddress,
-        },
-      },
-    ];
-
-    const { ciphertext, dataToEncryptHash } =
-      await LitJsSdk.encryptFileAndZipWithMetadata({
-        accessControlConditions,
-        sessionSigs,
-        chain: litProtocolChain,
-        file: file,
-        litNodeClient: litNodeClient,
-        readme: "Use IPFS CID of this file to decrypt it",
-      });
-    return { ciphertext, dataToEncryptHash };
+    return encryptedResult!;
   };
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
@@ -298,95 +274,96 @@ export function SendCard() {
 
     // encrypt files
     const encryptFilesResponse = await Promise.all(
-      data.files.map((file, index) =>
-        encryptFiles(file, data.walletAddress as `0x${string}`)
-      )
+      data.files.map((file, index) => hanldeEncryptFiles(file))
     );
-    try {
-      // Step 1: Initialize upload session and get signed URLs
-      const { sessionUuid: sessionId, files: signedUrls } =
-        await startUploadSession(data, SEND_FILE_ID);
 
-      const uploadTimestamp = Date.now();
+    console.log("encryptFilesResponse", SEND_FILE_ID, encryptFilesResponse);
 
-      // Step 2: Upload files to signed URLs
-      await Promise.all(
-        signedUrls.map((signedUrl: any, currentUpload: number) =>
-          uploadFileToSignedUrl(
-            signedUrl.url,
-            data.files[currentUpload],
-            currentUpload
-          )
-        )
-      );
+    // try {
+    //   // Step 1: Initialize upload session and get signed URLs
+    //   const { sessionUuid: sessionId, files: signedUrls } =
+    //     await startUploadSession(data, SEND_FILE_ID);
 
-      // Step 3: End the upload session
-      await endUploadSession(sessionId);
+    //   const uploadTimestamp = Date.now();
 
-      const totalSize = data.files.reduce(
-        (total, file) => total + file.size,
-        0
-      );
-      const filesInNs: NSFile[] = data.files.map((item, index) => {
-        return {
-          id: signedUrls[index].fileUuid,
-          path: signedUrls[index].path,
-          name: item.name,
-          format: item.type,
-          uploadTimestamp,
-          size: `${String((item.size / 1000000).toFixed(2))} MB`,
-          receiver: data.receiversEmail,
-        };
-      });
+    //   // Step 2: Upload files to signed URLs
+    //   await Promise.all(
+    //     signedUrls.map((signedUrl: any, currentUpload: number) =>
+    //       uploadFileToSignedUrl(
+    //         signedUrl.url,
+    //         data.files[currentUpload],
+    //         currentUpload
+    //       )
+    //     )
+    //   );
 
-      const transferMetaData: NSTransfer = {
-        id: SEND_FILE_ID,
-        sendersEmail: data.sendersEmail,
-        receiversEmail: data.receiversEmail,
-        title: data.title,
-        message: data.message ? data.message : undefined,
-        files: filesInNs,
-        size: `${String((totalSize / 1000000).toFixed(2))} MB`,
-        downloadCount: 0,
-        sentTimestamp: uploadTimestamp,
-        isPaid: data.isPaid,
-        paymentStatus: false,
-        paymentAmount: data.paymentAmount,
-        walletAddress: data.walletAddress,
-      };
+    //   // Step 3: End the upload session
+    //   await endUploadSession(sessionId);
 
-      // Step 4: Store file data in db
-      await storeMetadata(transferMetaData);
+    //   const totalSize = data.files.reduce(
+    //     (total, file) => total + file.size,
+    //     0
+    //   );
+    //   const filesInNs: NSFile[] = data.files.map((item, index) => {
+    //     return {
+    //       id: signedUrls[index].fileUuid,
+    //       path: signedUrls[index].path,
+    //       name: item.name,
+    //       format: item.type,
+    //       uploadTimestamp,
+    //       size: `${String((item.size / 1000000).toFixed(2))} MB`,
+    //       receiver: data.receiversEmail,
+    //     };
+    //   });
 
-      // Step 5: Send email alert to receiver
-      const sendAlertUrl = `/api/alerts/new-transfer`;
-      const alertOptions = {
-        receiversEmail: data.receiversEmail,
-        sendersEmail: data.sendersEmail,
-        title: data.title,
-        message: data.message ? data.message : "",
-        downloadLink: `${URL_ROOT}/transfers/${SEND_FILE_ID}`,
-        paymentWalletAddress: data.isPaid ? data.walletAddress : "",
-        paymentAmount: data.isPaid ? data.paymentAmount : 0,
-      };
-      const response = await axios.post(sendAlertUrl, alertOptions, {});
-      if (response.status != 200) {
-        throw new Error("Error when trying to send alert, we'll keep trying.");
-      }
-      setActiveTransferDisplay(transferMetaData);
-      setSendStatus(true);
-      toast({
-        title: "Success 😄",
-        description: `The files are on their way to ${data.receiversEmail}.`,
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Something went wrong",
-        // @ts-ignore
-        description: (error as Error).message || error!.shortMessage,
-      });
-    }
+    //   const transferMetaData: NSTransfer = {
+    //     id: SEND_FILE_ID,
+    //     sendersEmail: data.sendersEmail,
+    //     receiversEmail: data.receiversEmail,
+    //     title: data.title,
+    //     message: data.message ? data.message : undefined,
+    //     files: filesInNs,
+    //     size: `${String((totalSize / 1000000).toFixed(2))} MB`,
+    //     downloadCount: 0,
+    //     sentTimestamp: uploadTimestamp,
+    //     isPaid: data.isPaid,
+    //     paymentStatus: false,
+    //     paymentAmount: data.paymentAmount,
+    //     walletAddress: data.walletAddress,
+    //   };
+
+    //   // Step 4: Store file data in db
+    //   await storeMetadata(transferMetaData);
+
+    //   // Step 5: Send email alert to receiver
+    //   const sendAlertUrl = `/api/alerts/new-transfer`;
+    //   const alertOptions = {
+    //     receiversEmail: data.receiversEmail,
+    //     sendersEmail: data.sendersEmail,
+    //     title: data.title,
+    //     message: data.message ? data.message : "",
+    //     downloadLink: `${URL_ROOT}/transfers/${SEND_FILE_ID}`,
+    //     paymentWalletAddress: data.isPaid ? data.walletAddress : "",
+    //     paymentAmount: data.isPaid ? data.paymentAmount : 0,
+    //   };
+    //   const response = await axios.post(sendAlertUrl, alertOptions, {});
+    //   if (response.status != 200) {
+    //     throw new Error("Error when trying to send alert, we'll keep trying.");
+    //   }
+    //   setActiveTransferDisplay(transferMetaData);
+    //   setSendStatus(true);
+    //   toast({
+    //     title: "Success 😄",
+    //     description: `The files are on their way to ${data.receiversEmail}.`,
+    //   });
+    // } catch (error) {
+    //   toast({
+    //     variant: "destructive",
+    //     title: "Something went wrong",
+    //     // @ts-ignore
+    //     description: (error as Error).message || error!.shortMessage,
+    //   });
+    // }
   };
 
   const handleDrop = (
