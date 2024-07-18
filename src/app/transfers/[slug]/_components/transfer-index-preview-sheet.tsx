@@ -23,10 +23,6 @@ const placeholderImage = require("@/assets/placeholder.jpg");
 export const TransferIndexPreviewSheet = ({ file }: { file: NSFile }) => {
   const { file: selectedFile, setFile } = useContext(TransferContext);
 
-  function handleCopy(): void {
-    throw new Error("Function not implemented.");
-  }
-
   return (
     <>
       <Sheet>
@@ -70,7 +66,7 @@ export const TransferIndexPreviewSheet = ({ file }: { file: NSFile }) => {
             </SheetHeader>
 
             <Separator className="my-6" />
-            <div className="grid gap-4 pb-8">
+            {/* <div className="grid gap-4 pb-8">
               {file.src && (
                 <Image
                   src={file.src}
@@ -79,11 +75,11 @@ export const TransferIndexPreviewSheet = ({ file }: { file: NSFile }) => {
                   alt={`${file.name}-photo preview`}
                 />
               )}
-            </div>
+            </div> */}
           </ScrollArea>
           <SheetFooter className="absolute bottom-0 right-0 py-6 px-12 bg-background w-full flex md:justify-start">
             {/* {<Button>Download &quot;{file!.name.slice(0, 10)}...&quot;</Button>} */}
-            Pay Fee to download file
+            {/* Pay Fee to download file */}
           </SheetFooter>
         </SheetContent>
       </Sheet>

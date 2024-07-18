@@ -6,6 +6,7 @@ import axios from "axios";
 import { createContext, useState } from "react";
 import { collection, doc, getDoc } from "firebase/firestore";
 import { firestore } from "@/lib/firebase";
+import { mergeFileData } from "@/lib/utils";
 
 type TransfersContextProps = {
   file: NSFile | undefined;
@@ -51,21 +52,15 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
 
         let filesInNs: NSFile[] | undefined = undefined;
 
-        if (fileBinaryResponse.data.data.total > 0) {
-          filesInNs = fileBinaryResponse.data.data.items.map(
-            (item: any, index: number) => {
-              return {
-                id: item.fileUuid,
-                path: item.path,
-                src: item.link,
-                name: item.name,
-                format: item.contentType,
-                uploadTimestamp: item.createTime,
-                size: transferDataResponse.files![index].size,
-              };
-            }
-          );
-        }
+        if (
+          fileBinaryResponse.data.data.total > 0 &&
+          transferDataResponse.files
+        ) {
+          const metadataFiles = transferDataResponse.files;
+          const binaryFiles = fileBinaryResponse.data.data.items;
+
+          filesInNs = await mergeFileData(metadataFiles, binaryFiles);
+        };
 
         const transferData: NSTransfer = {
           id: slug,

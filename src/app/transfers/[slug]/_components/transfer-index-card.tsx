@@ -42,6 +42,9 @@ import {
 import Image from "next/image";
 import { handleCopy } from "@/lib/utils";
 
+import { useAccount } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+
 const notFound = require("@/assets/not-found.svg");
 
 export function TransferIndexCard({ slug }: { slug: string }) {
@@ -51,6 +54,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
   const [pendingPayConfirmation, setPendingPayConfirmation] = useState(false);
   const [payDetails, setPayDetails] = useState<any>();
   const [isCopied, setIsCopied] = useState(false);
+  const { isConnected } = useAccount();
 
   const {
     data: transfer,
@@ -61,7 +65,24 @@ export function TransferIndexCard({ slug }: { slug: string }) {
     queryFn: () => getTransfer(slug),
   });
 
-  function handleDownload() {
+  async function handleDownload() {
+    if (!transfer!.files || !isConnected) {
+      toast({
+        title: "Wallet not connected",
+        description: "Please connect a wallet and try again",
+      });
+      return;
+    }
+    //download cipher
+    const encryptedFiles = transfer!.files;
+    // Fetch the blob data
+    encryptedFiles.forEach((encFile) => {});
+    // const response =encryptedFiles.map( await fetch(matchingBinaryItem.link);)
+    // const blobData = await response.blob();
+
+    // console.log("utimestamp", matchingBinaryItem.createTime, metadataItem.size);
+    //decrypt
+    // download to hdd
     console.log("submit form data: ");
   }
 
@@ -324,13 +345,19 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                   )}
                 </Dialog>
               ) : (
-                <Button
-                  type="submit"
-                  onClick={handleDownload}
-                  className="w-full"
-                >
-                  Download Files
-                </Button>
+                <>
+                  {isConnected ? (
+                    <Button
+                      type="submit"
+                      onClick={handleDownload}
+                      className="w-full"
+                    >
+                      Download Files
+                    </Button>
+                  ) : (
+                    <ConnectButton />
+                  )}
+                </>
               )}
             </CardFooter>
           </>
