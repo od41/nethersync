@@ -36,14 +36,14 @@ export async function sendTransferAlert(options: TransferAlertProps) {
                   <table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation" style="text-align:center;margin-top:32px;margin-bottom:32px">
                     <tbody>
                       <tr>
-                        <td><a href="${downloadLink}" style="line-height:100%;text-decoration:none;display:inline-block;max-width:100%;background-color:#6d28d9;border-radius:0.55rem;color:rgb(255,255,255);font-size:12px;font-weight:600;text-decoration-line:none;text-align:center;padding-left:1.25rem;padding-right:1.25rem;padding-top:0.75rem;padding-bottom:0.75rem;padding:12px 20px 12px 20px" target="_blank"><span><!--[if mso]><i style="letter-spacing: 20px;mso-font-width:-100%;mso-text-raise:18" hidden>&nbsp;</i><![endif]--></span><span style="max-width:100%;display:inline-block;line-height:120%;mso-padding-alt:0px;mso-text-raise:9px">Get your files</span><span><!--[if mso]><i style="letter-spacing: 20px;mso-font-width:-100%" hidden>&nbsp;</i><![endif]--></span></a></td>
+                        <td><a href=${downloadLink} style="line-height:100%;text-decoration:none;display:inline-block;max-width:100%;background-color:#6d28d9;border-radius:0.55rem;color:rgb(255,255,255);font-size:12px;font-weight:600;text-decoration-line:none;text-align:center;padding-left:1.25rem;padding-right:1.25rem;padding-top:0.75rem;padding-bottom:0.75rem;padding:12px 20px 12px 20px" target="_blank"><span><!--[if mso]><i style="letter-spacing: 20px;mso-font-width:-100%;mso-text-raise:18" hidden>&nbsp;</i><![endif]--></span><span style="max-width:100%;display:inline-block;line-height:120%;mso-padding-alt:0px;mso-text-raise:9px">Get your files</span><span><!--[if mso]><i style="letter-spacing: 20px;mso-font-width:-100%" hidden>&nbsp;</i><![endif]--></span></a></td>
                       </tr>
                     </tbody>
                   </table>
                   <hr style="border:1px solid rgb(234,234,234);" />
-                  <p style="font-size:14px;line-height:24px;margin:16px 0;color:rgb(0,0,0)"><strong>Download Link:</strong> <br/><a href="https://nethersync.xyz" style="font-size:12px;line-height:24px;margin:16px 0;color:#6d28d9">${downloadLink}</a></p>
+                  <p style="font-size:14px;line-height:24px;margin:16px 0;color:rgb(0,0,0)"><strong>Download Link:</strong> <br/><a href=${downloadLink} style="font-size:12px;line-height:24px;margin:16px 0;color:#6d28d9">${downloadLink}</a></p>
 
-                  <p style="font-size:14px;line-height:24px;margin:16px 0;color:rgb(0,0,0)"><strong>Payment Amount: </strong> <br/>${paymentAmount}</p>
+                  <p style="font-size:14px;line-height:24px;margin:16px 0;color:rgb(0,0,0)"><strong>Payment Amount: </strong> <br/>$${paymentAmount}</p>
                   <hr style="border:1px solid rgb(234,234,234);" />
 
                   <a href="https://nethersync.xyz" style="font-size:12px;line-height:24px;margin:16px 0;color:rgb(102,102,102)">NetherSync</a>
