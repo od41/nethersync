@@ -51,10 +51,15 @@ import { useEthersSigner } from "@/lib/ethers-signer";
 
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { FilePreview } from "@/components/ui/file-preview";
 
 const successImage = require("@/assets/successful-send.png");
 
-interface FileWithPreview extends File {
+export interface FileWithPreview extends File {
+  name: string;
+  type: string;
+  size: number;
+  lastModified: number;
   preview: string;
   progress?: number;
   uploadComplete?: boolean;
@@ -379,11 +384,18 @@ export function SendCard() {
   ) => {
     event.preventDefault();
     const files = Array.from(event.dataTransfer.files);
-    const filePreviews = files.map((file: File) => ({
-      ...file,
+    // @ts-ignore
+    const filePreviews: FileWithPreview[] = files.map((file: File) => ({
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      lastModified: file.lastModified,
       preview: URL.createObjectURL(file),
     }));
-    setUploadedFiles((prevFiles) => [...prevFiles, ...filePreviews]);
+    setUploadedFiles((prevFiles: FileWithPreview[]) => [
+      ...prevFiles,
+      ...filePreviews,
+    ]);
     onChange([...form.getValues("files"), ...files]);
   };
 
@@ -406,8 +418,12 @@ export function SendCard() {
   ) => {
     if (event.target.files) {
       const files = Array.from(event.target.files);
-      const filePreviews = files.map((file: File) => ({
-        ...file,
+      // @ts-ignore
+      const filePreviews: FileWithPreview[] = files.map((file: File) => ({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        lastModified: file.lastModified,
         preview: URL.createObjectURL(file),
       }));
       setUploadedFiles((prevFiles) => [...prevFiles, ...filePreviews]);
@@ -469,7 +485,13 @@ export function SendCard() {
 
                   {uploadedFiles.length > 0 && (
                     <ScrollArea className="w-full whitespace-nowrap rounded-md my-4">
-                      <div className="grid grid-cols-4 gap-2">
+                      <div
+                        className="grid overflow-x-auto gap-2"
+                        style={{
+                          gridAutoColumns: "70px",
+                          gridAutoFlow: "column",
+                        }}
+                      >
                         {uploadedFiles.map((file, index) => (
                           <div key={index} className="my-2 relative ">
                             {isSubmitting ||
@@ -488,13 +510,7 @@ export function SendCard() {
                                 {/* <div className="aspect-square w-full h-full bg-background absolute top-0 left-0 opacity-40"></div> */}
                               </div>
                             )}
-                            <Image
-                              src={file.preview}
-                              alt={`preview of ${file.name}`}
-                              className="aspect-square w-full border border-muted rounded-md hover:border-primary object-cover"
-                              height="40"
-                              width="40"
-                            />
+                            {file && <FilePreview file={file} />}
                             {!isSubmitting && !sendStatus && (
                               <Button
                                 variant="destructive"
@@ -505,7 +521,9 @@ export function SendCard() {
                                 <X className="h-3 w-3" />
                               </Button>
                             )}
-                            <p>{file.name}</p>
+                            <p className="truncate w-[40px] text-xs text-muted-foreground">
+                              {file.name}
+                            </p>
                           </div>
                         ))}
                       </div>
