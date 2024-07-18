@@ -11,7 +11,7 @@ import { TransferIndexPreviewSheet } from "./transfer-index-preview-sheet";
 import { useContext, useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TransferContext } from "@/context/transfers";
-import { type NSTransfer, type NSFile } from "@/lib/types";
+import { type NSTransfer, type NSFile, EncryptedFile } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -27,6 +27,9 @@ import {
 } from "lucide-react";
 import { handlePayApi, handleConfirmPaymentApi } from "@/api";
 import { useToast } from "@/components/ui/use-toast";
+import { initLitClient, decryptFile } from "@/lib/lit-protocol";
+
+import { Signer } from "ethers";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -44,6 +47,7 @@ import { handleCopy } from "@/lib/utils";
 
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useEthersSigner } from "@/lib/ethers-signer";
 
 const notFound = require("@/assets/not-found.svg");
 
@@ -55,6 +59,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
   const [payDetails, setPayDetails] = useState<any>();
   const [isCopied, setIsCopied] = useState(false);
   const { isConnected } = useAccount();
+  const signer = useEthersSigner();
 
   const {
     data: transfer,
@@ -65,6 +70,25 @@ export function TransferIndexCard({ slug }: { slug: string }) {
     queryFn: () => getTransfer(slug),
   });
 
+  const handleDecryptFiles = async (encryptedFile: EncryptedFile) => {
+    // init litnodeclient
+    const litNodeClient = await initLitClient();
+
+    const decryptedResult = await decryptFile(
+      encryptedFile,
+      litNodeClient!,
+      signer as Signer
+    );
+    const decryptedFile = { ...decryptedResult, ...encryptedFile.metadata };
+    console.log("dfile...", decryptedFile);
+
+    const url = URL.createObjectURL(decryptedFile);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "decrypted_file";
+    a.click();
+  };
+
   async function handleDownload() {
     if (!transfer!.files || !isConnected) {
       toast({
@@ -73,10 +97,24 @@ export function TransferIndexCard({ slug }: { slug: string }) {
       });
       return;
     }
-    //download cipher
-    const encryptedFiles = transfer!.files;
     // Fetch the blob data
-    encryptedFiles.forEach((encFile) => {});
+    const encryptedFiles = transfer!.files;
+    encryptedFiles.forEach(async (encFile) => {
+      const res = await fetch(encFile.src!);
+      const buff = await res.blob();
+      const ciphertext = await buff.arrayBuffer();
+      console.log("ciphertext", ciphertext);
+      const ef = {
+        ciphertext,
+        metadata: {
+          name: encFile.name,
+          type: encFile.format,
+          size: encFile.size,
+        },
+      };
+      // decrypt and download
+      handleDecryptFiles(ef as unknown as EncryptedFile);
+    });
     // const response =encryptedFiles.map( await fetch(matchingBinaryItem.link);)
     // const blobData = await response.blob();
 

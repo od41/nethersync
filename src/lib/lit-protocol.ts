@@ -158,11 +158,7 @@ export const decryptFile = async (
       uint8arrayToString(decryptedFileUint8, "utf8"),
     ]);
 
-    const url = URL.createObjectURL(decryptedFile);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "decrypted_file";
-    a.click();
+    return decryptedFile;
   } catch (error) {
     console.error("error decrypting", error);
   }

@@ -10,6 +10,7 @@ export type NSFile = {
   receiver?: string;
   isPaid?: boolean;
   paymentAmount?: number;
+  dataToEncryptHash?: string;
 };
 
 export type NSTransfer = {

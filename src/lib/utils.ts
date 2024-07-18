@@ -27,6 +27,7 @@ type BinaryItem = {
   name: string;
   contentType: string;
   createTime: string;
+  dataToEncryptHash?: string;
   // Add other binary data properties as needed
 };
 
@@ -45,6 +46,7 @@ export async function mergeFileData(
       try {
         mergedFiles.push({
           id: metadataItem.id,
+          dataToEncryptHash: matchingBinaryItem.dataToEncryptHash,
           path: matchingBinaryItem.path,
           src: matchingBinaryItem.link,
           name: matchingBinaryItem.name,
