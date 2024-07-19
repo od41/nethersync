@@ -176,7 +176,6 @@ export function SendCard() {
   };
 
   const startUploadSession = async (files: EncryptedFile[], sendId: string) => {
-    // const { files } = formData;
     const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/upload`;
     const headers = {
       Authorization: `${APILLION_AUTH_SECRET}`,
@@ -270,7 +269,7 @@ export function SendCard() {
       litNodeClient!,
       signer as Signer
     );
-    const res = { ...encryptedResult, metadata: file };
+    const res = { ciphertext: encryptedResult, metadata: file };
 
     return res as EncryptedFile;
   };

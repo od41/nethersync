@@ -14,13 +14,6 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ file }) => {
   React.useEffect(() => {
     if (!file) return;
 
-    // const reader = new FileReader();
-    // reader.onloadend = () => {
-    //   setPreview(reader.result as string);
-    // };
-
-    console.log("ft", file);
-
     if (file.type.startsWith("image/")) {
       //   reader.readAsDataURL(file);
       setPreview(file.preview);

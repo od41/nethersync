@@ -74,7 +74,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
     queryFn: () => getTransfer(slug),
   });
 
-  const handleDecryptFiles = async (encryptedFile: EncryptedFile) => {
+  const myDecryptFile = async (encryptedFile: EncryptedFile) => {
     // init litnodeclient
     const litNodeClient = await initLitClient();
 
@@ -107,7 +107,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
         // Convert the encrypted content to a string
         // const encryptedString = new TextDecoder().decode(encryptedContent);
         // Decrypt the file content
-        const decryptedContent = await handleDecryptFiles(encryptedContent);
+        const decryptedContent = await myDecryptFile(encryptedContent);
         console.log("decryptedContent", decryptedContent);
 
         // Add the decrypted file to the ZIP
@@ -125,6 +125,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
   }
 
   async function decryptAndDownloadAsZip() {
+    setIsDownloading(true);
     if (!transfer!.files || !isConnected) {
       toast({
         title: "Wallet not connected",
@@ -136,9 +137,12 @@ export function TransferIndexCard({ slug }: { slug: string }) {
       // Fetch the blob data
       const encryptedFiles = transfer!.files;
       const zipBlob = await decryptAndZipFiles(encryptedFiles);
-      saveAs(zipBlob, `${transfer!.title}via_NetherSync.zip`);
+      saveAs(zipBlob, `${transfer!.title}_via_NetherSync.zip`);
       console.log("Successfully created and downloaded ZIP file");
+      setIsDownloading(false);
     } catch (error) {
+      setIsDownloading(false);
+
       console.error("Error creating ZIP file:", error);
     }
   }
@@ -153,31 +157,31 @@ export function TransferIndexCard({ slug }: { slug: string }) {
   }
 
   async function handleDownload() {
-    if (!transfer!.files || !isConnected) {
-      toast({
-        title: "Wallet not connected",
-        description: "Please connect a wallet and try again",
-      });
-      return;
-    }
-    // Fetch the blob data
-    const encryptedFiles = transfer!.files;
-    encryptedFiles.forEach(async (encFile) => {
-      const res = await fetch(encFile.src!);
-      const buff = await res.blob();
-      const ciphertext = await buff.arrayBuffer();
-      console.log("ciphertext", ciphertext);
-      const ef = {
-        ciphertext,
-        metadata: {
-          name: encFile.name,
-          type: encFile.format,
-          size: encFile.size,
-        },
-      };
-      // decrypt and download
-      handleDecryptFiles(ef as unknown as EncryptedFile);
-    });
+    // if (!transfer!.files || !isConnected) {
+    //   toast({
+    //     title: "Wallet not connected",
+    //     description: "Please connect a wallet and try again",
+    //   });
+    //   return;
+    // }
+    // // Fetch the blob data
+    // const encryptedFiles = transfer!.files;
+    // encryptedFiles.forEach(async (encFile) => {
+    //   const res = await fetch(encFile.src!);
+    //   const buff = await res.blob();
+    //   const ciphertext = await buff.arrayBuffer();
+    //   console.log("ciphertext", ciphertext);
+    //   const ef = {
+    //     ciphertext,
+    //     metadata: {
+    //       name: encFile.name,
+    //       type: encFile.format,
+    //       size: encFile.size,
+    //     },
+    //   };
+    //   // decrypt and download
+    //   myDecryptFile(ef as unknown as EncryptedFile);
+    // });
     // const response =encryptedFiles.map( await fetch(matchingBinaryItem.link);)
     // const blobData = await response.blob();
 

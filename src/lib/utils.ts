@@ -40,7 +40,7 @@ export async function mergeFileData(
       try {
         mergedFiles.push({
           id: metadataItem.id,
-          dataToEncryptHash: matchingBinaryItem.dataToEncryptHash,
+          // dataToEncryptHash: matchingBinaryItem.dataToEncryptHash,
           path: matchingBinaryItem.path,
           src: matchingBinaryItem.link,
           name: matchingBinaryItem.name,

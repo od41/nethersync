@@ -8,7 +8,7 @@ import {
   AuthCallbackParams,
   EncryptToJsonPayload,
   DecryptFromJsonProps,
-  EncryptToJsonDataType
+  EncryptToJsonDataType,
 } from "@lit-protocol/types";
 
 import {
@@ -21,7 +21,7 @@ import { Signer } from "ethers";
 import { EncryptedFile } from "./types";
 
 const litJsConfig = {
-  litNetwork: LitNetwork.DatilDev,
+  litNetwork: LitNetwork.Cayenne,
 };
 
 export const litProtocolChain = "baseGoerli";
@@ -85,7 +85,7 @@ export const getSessionSignatures = async (
       },
     ],
     authNeededCallback,
-    // capacityDelegationAuthSig,
+    // capacityDelegationAuthSig, //TODO
   });
   return sessionSigs;
 };
@@ -114,24 +114,20 @@ export const encryptFile = async (
 
   try {
     const sessionSigs = await getSessionSignatures(litNodeClient, signer);
-    const { ciphertext, dataToEncryptHash } = await LitJsSdk.encryptFile(
-      {
-        file,
-        chain: litProtocolChain,
-        accessControlConditions,
-        // sessionSigs
-      },
-      litNodeClient
-    );
+    const encryptedPayloadString = await LitJsSdk.encryptToJson({
+      file,
+      chain: litProtocolChain,
+      accessControlConditions,
+      // sessionSigs
+      litNodeClient,
+    });
 
-    return {
-      ciphertext,
-      dataToEncryptHash,
-    };
+    await litNodeClient.disconnect();
+    return encryptedPayloadString;
   } catch (error) {
+    await litNodeClient.disconnect();
     console.error("error encrypting", error);
   }
-  await litNodeClient.disconnect();
 };
 
 export const decryptFile = async (
@@ -147,13 +143,16 @@ export const decryptFile = async (
     console.log("sessionsigs", sessionSigs);
     console.log("encyrptmeta", encryptedFile);
 
-    const parsedJsonData = {
-      dataType: "string" as EncryptToJsonDataType,
-      accessControlConditions,
-      chain: litProtocolChain,
-      ciphertext: encryptedFile.ciphertext,
-      dataToEncryptHash: encryptedFile.dataToEncryptHash,
-    };
+    const parsedJsonData = JSON.parse(encryptedFile.ciphertext);
+    console.log("parsed", parsedJsonData);
+
+    // const parsedJsonData = {
+    //   dataType: "string" as EncryptToJsonDataType,
+    //   accessControlConditions,
+    //   chain: litProtocolChain,
+    //   ciphertext: encryptedFile.ciphertext,
+    //   dataToEncryptHash: encryptedFile.dataToEncryptHash,
+    // };
     const decryptedFileResponse = await LitJsSdk.decryptFromJson({
       parsedJsonData: parsedJsonData!,
       sessionSigs: sessionSigs!,
@@ -161,16 +160,16 @@ export const decryptFile = async (
     });
 
     console.log("decrypted file response", decryptedFileResponse);
-    
+
     const decryptedFile = new Blob([decryptedFileResponse]);
     console.log("decrypted file", decryptedFile);
+    await litNodeClient.disconnect();
 
     return decryptedFile;
   } catch (error) {
+    await litNodeClient.disconnect();
     console.error("error decrypting", error);
   }
-
-  await litNodeClient.disconnect();
 };
 
 export const disconnect = () => {

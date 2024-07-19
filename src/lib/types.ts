@@ -108,6 +108,5 @@ export type TransferAlertProps = {
 
 export type EncryptedFile = {
   ciphertext: string;
-  dataToEncryptHash: string;
   metadata?: any;
 };
