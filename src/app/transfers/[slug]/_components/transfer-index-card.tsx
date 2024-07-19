@@ -31,7 +31,6 @@ import { initLitClient, decryptFile } from "@/lib/lit-protocol";
 
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { create, IPFSHTTPClient } from "ipfs-http-client";
 
 import { Signer } from "ethers";
 
@@ -64,6 +63,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
   const [isCopied, setIsCopied] = useState(false);
   const { isConnected } = useAccount();
   const signer = useEthersSigner();
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const {
     data: transfer,
@@ -83,16 +83,16 @@ export function TransferIndexCard({ slug }: { slug: string }) {
       litNodeClient!,
       signer as Signer
     );
-    
-    console.log("dfile...", decryptedResult);
+
+    console.log("DFILE...", decryptedResult, !decryptedResult);
+    if (!decryptedResult) {
+      throw Error("Error downloading data. Decryption failed.");
+    }
 
     return decryptedResult;
   };
 
   async function decryptAndZipFiles(encryptedFiles: NSFile[]): Promise<Blob> {
-    const ipfs: IPFSHTTPClient = create({
-      url: "https://ipfs-dev.apillon.io/ipfs/",
-    });
     const zip = new JSZip();
 
     for (const file of encryptedFiles) {
@@ -106,7 +106,6 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
         // Convert the encrypted content to a string
         // const encryptedString = new TextDecoder().decode(encryptedContent);
-
         // Decrypt the file content
         const decryptedContent = await handleDecryptFiles(encryptedContent);
         console.log("decryptedContent", decryptedContent);
@@ -116,7 +115,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
         console.log(`Successfully decrypted: ${file.name}`);
       } catch (error) {
-        console.error(`Error processing file with CID ${file.cid}:`, error);
+        console.error(`Error zipping file ${file.name}:`, error);
       }
     }
 
@@ -452,9 +451,10 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                     <Button
                       type="submit"
                       onClick={decryptAndDownloadAsZip}
+                      disabled={isDownloading}
                       className="w-full"
                     >
-                      Download Files
+                      {isDownloading ? "Downloading..." : "Download Files"}
                     </Button>
                   ) : (
                     <ConnectButton />

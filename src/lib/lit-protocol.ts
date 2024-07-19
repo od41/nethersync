@@ -4,7 +4,12 @@ import { useAccount, useSignMessage } from "wagmi";
 import { LitNetwork } from "@lit-protocol/constants";
 import { uint8arrayToString } from "@lit-protocol/uint8arrays";
 
-import { AuthCallbackParams } from "@lit-protocol/types";
+import {
+  AuthCallbackParams,
+  EncryptToJsonPayload,
+  DecryptFromJsonProps,
+  EncryptToJsonDataType
+} from "@lit-protocol/types";
 
 import {
   LitAbility,
@@ -141,22 +146,24 @@ export const decryptFile = async (
 
     console.log("sessionsigs", sessionSigs);
     console.log("encyrptmeta", encryptedFile);
-    const decryptedFileUint8 = await LitJsSdk.decryptToFile(
-      {
-        ciphertext: encryptedFile.ciphertext,
-        dataToEncryptHash: encryptedFile.dataToEncryptHash,
-        accessControlConditions,
-        sessionSigs,
-        chain: litProtocolChain,
-      },
-      litNodeClient
-    );
 
-    console.log("decrypted file", decryptedFileUint8);
+    const parsedJsonData = {
+      dataType: "string" as EncryptToJsonDataType,
+      accessControlConditions,
+      chain: litProtocolChain,
+      ciphertext: encryptedFile.ciphertext,
+      dataToEncryptHash: encryptedFile.dataToEncryptHash,
+    };
+    const decryptedFileResponse = await LitJsSdk.decryptFromJson({
+      parsedJsonData: parsedJsonData!,
+      sessionSigs: sessionSigs!,
+      litNodeClient,
+    });
 
-    const decryptedFile = new Blob([
-      uint8arrayToString(decryptedFileUint8, "utf8"),
-    ]);
+    console.log("decrypted file response", decryptedFileResponse);
+    
+    const decryptedFile = new Blob([decryptedFileResponse]);
+    console.log("decrypted file", decryptedFile);
 
     return decryptedFile;
   } catch (error) {
