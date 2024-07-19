@@ -7,6 +7,7 @@ export type NSFile = {
   size: string;
   uploadTimestamp: number;
   src?: string;
+  cid?: string;
   receiver?: string;
   isPaid?: boolean;
   paymentAmount?: number;

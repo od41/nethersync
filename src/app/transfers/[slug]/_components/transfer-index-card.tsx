@@ -29,6 +29,10 @@ import { handlePayApi, handleConfirmPaymentApi } from "@/api";
 import { useToast } from "@/components/ui/use-toast";
 import { initLitClient, decryptFile } from "@/lib/lit-protocol";
 
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+import { create, IPFSHTTPClient } from "ipfs-http-client";
+
 import { Signer } from "ethers";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -79,15 +83,75 @@ export function TransferIndexCard({ slug }: { slug: string }) {
       litNodeClient!,
       signer as Signer
     );
-    const decryptedFile = { ...decryptedResult, ...encryptedFile.metadata };
-    console.log("dfile...", decryptedFile);
+    
+    console.log("dfile...", decryptedResult);
 
-    const url = URL.createObjectURL(decryptedFile);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "decrypted_file";
-    a.click();
+    return decryptedResult;
   };
+
+  async function decryptAndZipFiles(encryptedFiles: NSFile[]): Promise<Blob> {
+    const ipfs: IPFSHTTPClient = create({
+      url: "https://ipfs-dev.apillon.io/ipfs/",
+    });
+    const zip = new JSZip();
+
+    for (const file of encryptedFiles) {
+      try {
+        // Fetch the encrypted file from IPFS
+        const encryptedContent = await fetchEncryptedData(file.src!);
+        if (!encryptedContent) {
+          console.error(`Failed to fetch file with CID: ${file.src!}`);
+          continue;
+        }
+
+        // Convert the encrypted content to a string
+        // const encryptedString = new TextDecoder().decode(encryptedContent);
+
+        // Decrypt the file content
+        const decryptedContent = await handleDecryptFiles(encryptedContent);
+        console.log("decryptedContent", decryptedContent);
+
+        // Add the decrypted file to the ZIP
+        zip.file(file.name, decryptedContent!, { binary: false });
+
+        console.log(`Successfully decrypted: ${file.name}`);
+      } catch (error) {
+        console.error(`Error processing file with CID ${file.cid}:`, error);
+      }
+    }
+
+    // Generate the ZIP file
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    return zipBlob;
+  }
+
+  async function decryptAndDownloadAsZip() {
+    if (!transfer!.files || !isConnected) {
+      toast({
+        title: "Wallet not connected",
+        description: "Please connect a wallet and try again",
+      });
+      return;
+    }
+    try {
+      // Fetch the blob data
+      const encryptedFiles = transfer!.files;
+      const zipBlob = await decryptAndZipFiles(encryptedFiles);
+      saveAs(zipBlob, `${transfer!.title}via_NetherSync.zip`);
+      console.log("Successfully created and downloaded ZIP file");
+    } catch (error) {
+      console.error("Error creating ZIP file:", error);
+    }
+  }
+
+  async function fetchEncryptedData(url: string): Promise<EncryptedFile> {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data as EncryptedFile;
+  }
 
   async function handleDownload() {
     if (!transfer!.files || !isConnected) {
@@ -387,7 +451,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                   {isConnected ? (
                     <Button
                       type="submit"
-                      onClick={handleDownload}
+                      onClick={decryptAndDownloadAsZip}
                       className="w-full"
                     >
                       Download Files

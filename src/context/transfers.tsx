@@ -58,9 +58,11 @@ export function FilesProvider({ children }: { children: React.ReactNode }) {
         ) {
           const metadataFiles = transferDataResponse.files;
           const binaryFiles = fileBinaryResponse.data.data.items;
+          console.log("binaryFiles", binaryFiles);
 
           filesInNs = await mergeFileData(metadataFiles, binaryFiles);
-        };
+          console.log("filesInNs", filesInNs);
+        }
 
         const transferData: NSTransfer = {
           id: slug,

@@ -14,12 +14,6 @@ export async function handleCopy(textToCopy: string) {
   }
 }
 
-type MetadataItem = {
-  id: string;
-  size: number;
-  // Add other metadata properties as needed
-};
-
 type BinaryItem = {
   fileUuid: string;
   path: string;
@@ -28,7 +22,7 @@ type BinaryItem = {
   contentType: string;
   createTime: string;
   dataToEncryptHash?: string;
-  // Add other binary data properties as needed
+  CID?: string;
 };
 
 export async function mergeFileData(
@@ -51,6 +45,7 @@ export async function mergeFileData(
           src: matchingBinaryItem.link,
           name: matchingBinaryItem.name,
           format: metadataItem.format,
+          cid: matchingBinaryItem.CID,
           // @ts-ignore
           uploadTimestamp: matchingBinaryItem.createTime,
           size: String(metadataItem.size),
