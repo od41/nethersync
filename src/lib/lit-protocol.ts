@@ -24,7 +24,7 @@ const litJsConfig = {
   litNetwork: LitNetwork.Cayenne,
 };
 
-export const litProtocolChain = "baseGoerli";
+export const litProtocolChain = "baseSepolia";
 
 export const credentialNFTContract = "";
 

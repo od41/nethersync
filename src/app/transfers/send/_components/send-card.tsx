@@ -697,7 +697,8 @@ export function SendCard() {
 
 function SuccessDisplay() {
   const router = useRouter();
-  const navigateToSend = () => {
+  const sendMoreFiles = () => {
+    console.log("sendingfilessss");
     router.refresh();
   };
   return (
@@ -719,7 +720,7 @@ function SuccessDisplay() {
         <CardFooter className="grid gap-3">
           <PreviewSheet />
 
-          <Button className="w-full" onClick={navigateToSend}>
+          <Button className="w-full" onClick={sendMoreFiles}>
             Send more files
           </Button>
         </CardFooter>
