@@ -175,7 +175,7 @@ export function SendCard() {
     }
   };
 
-  const startUploadSession = async (files: EncryptedFile[], sendId: string) => {
+  const startUploadSession = async (files: File[], sendId: string) => {
     const url = `https://api.apillon.io/storage/buckets/${APILLON_BUCKET_UUID}/upload`;
     const headers = {
       Authorization: `${APILLION_AUTH_SECRET}`,
@@ -183,7 +183,7 @@ export function SendCard() {
     };
     const data = {
       files: files.map((file) => ({
-        fileName: file.metadata.name,
+        fileName: file.name,
         path: `send/${sendId}`,
         contentType: "application/octet-stream", // file is encrypted
       })),
@@ -204,7 +204,7 @@ export function SendCard() {
 
   const uploadFileToSignedUrl = async (
     url: string,
-    file: EncryptedFile,
+    file: File,
     currentUpload: number
   ) => {
     const headers = {
@@ -244,7 +244,7 @@ export function SendCard() {
     } catch (error) {
       toast({
         variant: "destructive",
-        title: `Error uploading ${file.metadata.name}`,
+        title: `Error uploading ${file.name}`,
         description: "Please, wait a moment and try again.",
       });
     }
@@ -269,9 +269,8 @@ export function SendCard() {
       litNodeClient!,
       signer as Signer
     );
-    const res = { ciphertext: encryptedResult, metadata: file };
 
-    return res as EncryptedFile;
+    return encryptedResult as File;
   };
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
@@ -289,6 +288,8 @@ export function SendCard() {
     const encryptFilesResponse = await Promise.all(
       data.files.map((file) => handleEncryptFiles(file))
     );
+
+    console.log("encryptFilesResponse", encryptFilesResponse);
 
     try {
       // Step 1: Initialize upload session and get signed URLs

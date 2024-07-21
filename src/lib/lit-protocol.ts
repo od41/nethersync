@@ -114,16 +114,20 @@ export const encryptFile = async (
 
   try {
     const sessionSigs = await getSessionSignatures(litNodeClient, signer);
-    const encryptedPayloadString = await LitJsSdk.encryptToJson({
+    const fileResZip = await LitJsSdk.encryptFileAndZipWithMetadata({
       file,
       chain: litProtocolChain,
       accessControlConditions,
-      // sessionSigs
+      sessionSigs: sessionSigs!,
       litNodeClient,
+      readme: "Encrypted on NetherSync.xyz. Decrypt by recipient",
     });
 
+    const encryptedBlob = new Blob([fileResZip], { type: "text/plain" });
+    const encryptedFile = new File([encryptedBlob], file.name);
+
     await litNodeClient.disconnect();
-    return encryptedPayloadString;
+    return encryptedFile;
   } catch (error) {
     await litNodeClient.disconnect();
     console.error("error encrypting", error);
@@ -131,7 +135,7 @@ export const encryptFile = async (
 };
 
 export const decryptFile = async (
-  encryptedFile: EncryptedFile,
+  encryptedFile: File | Blob,
   litNodeClient: LitJsSdk.LitNodeClient,
   signer: Signer
 ) => {
@@ -140,32 +144,24 @@ export const decryptFile = async (
   try {
     const sessionSigs = await getSessionSignatures(litNodeClient, signer);
 
-    console.log("sessionsigs", sessionSigs);
-    console.log("encyrptmeta", encryptedFile);
+    console.log("sessionSigs", sessionSigs);
 
-    const parsedJsonData = JSON.parse(encryptedFile.ciphertext);
-    console.log("parsed", parsedJsonData);
-
-    // const parsedJsonData = {
-    //   dataType: "string" as EncryptToJsonDataType,
-    //   accessControlConditions,
-    //   chain: litProtocolChain,
-    //   ciphertext: encryptedFile.ciphertext,
-    //   dataToEncryptHash: encryptedFile.dataToEncryptHash,
-    // };
-    const decryptedFileResponse = await LitJsSdk.decryptFromJson({
-      parsedJsonData: parsedJsonData!,
-      sessionSigs: sessionSigs!,
+    const decryptedFileResponse = await LitJsSdk.decryptZipFileWithMetadata({
+      file: encryptedFile,
+      sessionSigs,
       litNodeClient,
     });
 
-    console.log("decrypted file response", decryptedFileResponse);
+    const { decryptedFile, metadata } = decryptedFileResponse!;
 
-    const decryptedFile = new Blob([decryptedFileResponse]);
-    console.log("decrypted file", decryptedFile);
+    const decryptedBlob = new Blob([decryptedFile], {
+      type: "application/octet-stream",
+    });
+
+    console.log("decrypted file", decryptedBlob);
     await litNodeClient.disconnect();
 
-    return decryptedFile;
+    return decryptedBlob;
   } catch (error) {
     await litNodeClient.disconnect();
     console.error("error decrypting", error);

@@ -38,7 +38,7 @@ export const PreviewSheet = () => {
         <SheetContent className="w-full sm:max-w-[50%] p-12 pt-0">
           <SheetHeader className="w-full">
             <div className="h-16 mb-12"></div>
-            <SheetTitle className="text-3xl">
+            <SheetTitle className="text-3xl text-left">
               {completedTransfer?.title}
             </SheetTitle>
             <SheetDescription>

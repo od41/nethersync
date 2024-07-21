@@ -74,7 +74,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
     queryFn: () => getTransfer(slug),
   });
 
-  const myDecryptFile = async (encryptedFile: EncryptedFile) => {
+  const myDecryptFile = async (encryptedFile: File | Blob) => {
     // init litnodeclient
     const litNodeClient = await initLitClient();
 
@@ -86,7 +86,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
     console.log("DFILE...", decryptedResult, !decryptedResult);
     if (!decryptedResult) {
-      throw Error("Error downloading data. Decryption failed.");
+      throw Error("Error decrypting data. Decryption failed.");
     }
 
     return decryptedResult;
@@ -94,20 +94,19 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
   async function decryptAndZipFiles(encryptedFiles: NSFile[]): Promise<Blob> {
     const zip = new JSZip();
+    let isFailed = false;
 
     for (const file of encryptedFiles) {
       try {
         // Fetch the encrypted file from IPFS
-        const encryptedContent = await fetchEncryptedData(file.src!);
-        if (!encryptedContent) {
-          console.error(`Failed to fetch file with CID: ${file.src!}`);
+        const encryptedFileBlob = await fetchEncryptedData(file.src!);
+        if (!encryptedFileBlob) {
+          console.error(`Failed to fetch file with link: ${file.src!}`);
           continue;
         }
 
-        // Convert the encrypted content to a string
-        // const encryptedString = new TextDecoder().decode(encryptedContent);
         // Decrypt the file content
-        const decryptedContent = await myDecryptFile(encryptedContent);
+        const decryptedContent = await myDecryptFile(encryptedFileBlob);
         console.log("decryptedContent", decryptedContent);
 
         // Add the decrypted file to the ZIP
@@ -115,13 +114,26 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
         console.log(`Successfully decrypted: ${file.name}`);
       } catch (error) {
+        isFailed = true;
         console.error(`Error zipping file ${file.name}:`, error);
       }
     }
 
+    if (isFailed) throw Error(`Zipping failed: ${error?.message}`);
     // Generate the ZIP file
     const zipBlob = await zip.generateAsync({ type: "blob" });
     return zipBlob;
+  }
+
+  async function fetchEncryptedData(url: string): Promise<any> {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    console.log("fetched data", response);
+    const data = await response.blob();
+    console.log("fetched data BLOB", data);
+    return data;
   }
 
   async function decryptAndDownloadAsZip() {
@@ -145,15 +157,6 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
       console.error("Error creating ZIP file:", error);
     }
-  }
-
-  async function fetchEncryptedData(url: string): Promise<EncryptedFile> {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data as EncryptedFile;
   }
 
   async function handleDownload() {
