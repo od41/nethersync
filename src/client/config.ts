@@ -4,6 +4,7 @@ export const APILLION_AUTH_SECRET =
   process.env.NEXT_PUBLIC_APILLION_AUTH_SECRET;
 
 export const URL_ROOT = process.env.NEXT_PUBLIC_URL_ROOT;
+export const SIGNING_URL_ROOT = process.env.NEXT_PUBLIC_SIGNING_URL_ROOT;
 
 export const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY!;
 export const FIREBASE_AUTH_DOMAIN =

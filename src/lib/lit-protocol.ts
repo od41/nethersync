@@ -4,12 +4,7 @@ import { useAccount, useSignMessage } from "wagmi";
 import { LitNetwork } from "@lit-protocol/constants";
 import { uint8arrayToString } from "@lit-protocol/uint8arrays";
 
-import {
-  AuthCallbackParams,
-  EncryptToJsonPayload,
-  DecryptFromJsonProps,
-  EncryptToJsonDataType,
-} from "@lit-protocol/types";
+import { AuthCallbackParams } from "@lit-protocol/types";
 
 import {
   LitAbility,
@@ -18,8 +13,7 @@ import {
   generateAuthSig,
 } from "@lit-protocol/auth-helpers";
 import { Signer } from "ethers";
-import { EncryptedFile } from "./types";
-import { URL_ROOT } from "@/client/config";
+import { SIGNING_URL_ROOT } from "@/client/config";
 
 const litJsConfig = {
   litNetwork: LitNetwork.Cayenne,
@@ -64,7 +58,7 @@ export const getSessionSignatures = async (
       litNodeClient: litNodeClient,
       statement:
         "Sign this message that will be used to encrypt or decrypt your messages on NetherSync.xyz",
-      domain: URL_ROOT,
+      domain: SIGNING_URL_ROOT,
     });
 
     // Generate the authSig
