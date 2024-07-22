@@ -84,7 +84,6 @@ export function TransferIndexCard({ slug }: { slug: string }) {
       signer as Signer
     );
 
-    console.log("DFILE...", decryptedResult, !decryptedResult);
     if (!decryptedResult) {
       throw Error("Error decrypting data. Decryption failed.");
     }
@@ -107,12 +106,9 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
         // Decrypt the file content
         const decryptedContent = await myDecryptFile(encryptedFileBlob);
-        console.log("decryptedContent", decryptedContent);
 
         // Add the decrypted file to the ZIP
         zip.file(file.name, decryptedContent!, { binary: false });
-
-        console.log(`Successfully decrypted: ${file.name}`);
       } catch (error) {
         isFailed = true;
         console.error(`Error zipping file ${file.name}:`, error);
@@ -130,9 +126,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    console.log("fetched data", response);
     const data = await response.blob();
-    console.log("fetched data BLOB", data);
     return data;
   }
 
@@ -157,41 +151,6 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
       console.error("Error creating ZIP file:", error);
     }
-  }
-
-  async function handleDownload() {
-    // if (!transfer!.files || !isConnected) {
-    //   toast({
-    //     title: "Wallet not connected",
-    //     description: "Please connect a wallet and try again",
-    //   });
-    //   return;
-    // }
-    // // Fetch the blob data
-    // const encryptedFiles = transfer!.files;
-    // encryptedFiles.forEach(async (encFile) => {
-    //   const res = await fetch(encFile.src!);
-    //   const buff = await res.blob();
-    //   const ciphertext = await buff.arrayBuffer();
-    //   console.log("ciphertext", ciphertext);
-    //   const ef = {
-    //     ciphertext,
-    //     metadata: {
-    //       name: encFile.name,
-    //       type: encFile.format,
-    //       size: encFile.size,
-    //     },
-    //   };
-    //   // decrypt and download
-    //   myDecryptFile(ef as unknown as EncryptedFile);
-    // });
-    // const response =encryptedFiles.map( await fetch(matchingBinaryItem.link);)
-    // const blobData = await response.blob();
-
-    // console.log("utimestamp", matchingBinaryItem.createTime, metadataItem.size);
-    //decrypt
-    // download to hdd
-    console.log("submit form data: ");
   }
 
   async function handlePay(isDialogOpen: boolean) {
@@ -224,7 +183,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
         description: `Payment verified on ${res.timeStamp}`,
       });
       setPendingPayConfirmation(false);
-      console.log("payment confirmed", res);
+      console.log("payment confirmed");
     }
   }
 

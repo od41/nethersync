@@ -19,6 +19,7 @@ import {
 } from "@lit-protocol/auth-helpers";
 import { Signer } from "ethers";
 import { EncryptedFile } from "./types";
+import { URL_ROOT } from "@/client/config";
 
 const litJsConfig = {
   litNetwork: LitNetwork.Cayenne,
@@ -61,6 +62,9 @@ export const getSessionSignatures = async (
       walletAddress: address,
       nonce: latestBlockhash,
       litNodeClient: litNodeClient,
+      statement:
+        "Sign this message that will be used to encrypt or decrypt your messages on NetherSync.xyz",
+      domain: URL_ROOT,
     });
 
     // Generate the authSig
@@ -144,8 +148,6 @@ export const decryptFile = async (
   try {
     const sessionSigs = await getSessionSignatures(litNodeClient, signer);
 
-    console.log("sessionSigs", sessionSigs);
-
     const decryptedFileResponse = await LitJsSdk.decryptZipFileWithMetadata({
       file: encryptedFile,
       sessionSigs,
@@ -158,7 +160,6 @@ export const decryptFile = async (
       type: "application/octet-stream",
     });
 
-    console.log("decrypted file", decryptedBlob);
     await litNodeClient.disconnect();
 
     return decryptedBlob;

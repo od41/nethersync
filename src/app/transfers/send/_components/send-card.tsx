@@ -289,8 +289,6 @@ export function SendCard() {
       data.files.map((file) => handleEncryptFiles(file))
     );
 
-    console.log("encryptFilesResponse", encryptFilesResponse);
-
     try {
       // Step 1: Initialize upload session and get signed URLs
       const { sessionUuid: sessionId, files: signedUrls } =
@@ -698,7 +696,6 @@ export function SendCard() {
 function SuccessDisplay() {
   const router = useRouter();
   const sendMoreFiles = () => {
-    console.log("sendingfilessss");
     router.refresh();
   };
   return (
@@ -719,10 +716,10 @@ function SuccessDisplay() {
         </CardContent>
         <CardFooter className="grid gap-3">
           <PreviewSheet />
-
-          <Button className="w-full" onClick={sendMoreFiles}>
+          {/* // TODO fix the refresh to send more files */}
+          {/* <Button className="w-full" onClick={sendMoreFiles}>
             Send more files
-          </Button>
+          </Button> */}
         </CardFooter>
       </Card>
     </>
