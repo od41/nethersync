@@ -29,6 +29,8 @@ import { Check, Loader2, Upload, X } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
 
+import * as LitJsSdk from "@lit-protocol/lit-node-client";
+
 import { Signer } from "ethers";
 
 import axios from "axios";
@@ -46,7 +48,12 @@ import { v4 as uuidv4 } from "uuid";
 import { firestore } from "@/lib/firebase";
 import { collection, doc, setDoc } from "firebase/firestore";
 
-import { initLitClient, encryptFile } from "@/lib/lit-protocol";
+import {
+  initLitClient,
+  encryptFile,
+  getSessionSignatures,
+} from "@/lib/lit-protocol";
+import { type SessionSigsMap } from "@lit-protocol/types";
 import { useEthersSigner } from "@/lib/ethers-signer";
 
 import { useAccount } from "wagmi";
@@ -261,13 +268,16 @@ export function SendCard() {
     return response.data;
   };
 
-  const handleEncryptFiles = async (file: File) => {
+  const handleEncryptFiles = async (
+    file: File,
+    litNodeClient: LitJsSdk.LitNodeClient,
+    sessionSigs: SessionSigsMap
+  ) => {
     // init litnodeclient
-    const litNodeClient = await initLitClient();
     const encryptedResult = await encryptFile(
       file,
       litNodeClient!,
-      signer as Signer
+      sessionSigs
     );
 
     return encryptedResult as File;
@@ -284,9 +294,19 @@ export function SendCard() {
     // generate unique ID for the transfer
     const SEND_FILE_ID = uuidv4();
 
+    // initiate lit client
+    const litNodeClient = await initLitClient();
+    // initiate session
+    const sessionSigs = await getSessionSignatures(
+      litNodeClient!,
+      signer as Signer
+    );
+
     // encrypt files
     const encryptFilesResponse = await Promise.all(
-      data.files.map((file) => handleEncryptFiles(file))
+      data.files.map((file) =>
+        handleEncryptFiles(file, litNodeClient!, sessionSigs!)
+      ) // pass lit session to handle encrypt function
     );
 
     try {

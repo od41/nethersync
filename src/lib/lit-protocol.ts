@@ -4,13 +4,14 @@ import { useAccount, useSignMessage } from "wagmi";
 import { LitNetwork } from "@lit-protocol/constants";
 import { uint8arrayToString } from "@lit-protocol/uint8arrays";
 
-import { AuthCallbackParams } from "@lit-protocol/types";
+import { AuthCallbackParams, type SessionSigsMap } from "@lit-protocol/types";
 
 import {
   LitAbility,
   createSiweMessageWithRecaps,
   LitAccessControlConditionResource,
   generateAuthSig,
+  
 } from "@lit-protocol/auth-helpers";
 import { Signer } from "ethers";
 import { SIGNING_URL_ROOT } from "@/client/config";
@@ -48,6 +49,8 @@ export const getSessionSignatures = async (
     expiration,
     resourceAbilityRequests,
   }: AuthCallbackParams) => {
+    console.log("uri", uri);
+    console.log("SIGNING_URL_ROOT", SIGNING_URL_ROOT);
     // Prepare the SIWE message for signing
     const toSign = await createSiweMessageWithRecaps({
       uri: uri!,
@@ -106,12 +109,13 @@ const accessControlConditions = [
 export const encryptFile = async (
   file: File,
   litNodeClient: LitJsSdk.LitNodeClient,
-  signer: Signer
+  // signer: Signer,
+  sessionSigs: SessionSigsMap
 ) => {
   if (!file || !litNodeClient) return;
 
   try {
-    const sessionSigs = await getSessionSignatures(litNodeClient, signer);
+    // const sessionSigs = await getSessionSignatures(litNodeClient, signer);
     const fileResZip = await LitJsSdk.encryptFileAndZipWithMetadata({
       file,
       chain: litProtocolChain,
@@ -140,6 +144,9 @@ export const decryptFile = async (
   if (!encryptedFile || !litNodeClient) return;
 
   try {
+    console.log("encryptedFile", encryptedFile);
+    console.log("signer", signer);
+    const signerInJSON = JSON.stringify(signer);
     const sessionSigs = await getSessionSignatures(litNodeClient, signer);
 
     const decryptedFileResponse = await LitJsSdk.decryptZipFileWithMetadata({
