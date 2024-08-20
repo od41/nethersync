@@ -57,8 +57,8 @@ import { type SessionSigsMap } from "@lit-protocol/types";
 import { useEthersSigner } from "@/lib/ethers-signer";
 
 import { useAccount } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { FilePreview } from "@/components/ui/file-preview";
+import { MyConnectButton } from "@/components/my-connect-button";
 
 const successImage = require("@/assets/successful-send.png");
 
@@ -704,7 +704,7 @@ export function SendCard() {
                 )}
               </Button>
             ) : (
-              <ConnectButton /> // TODO style connect button to fit theme
+              <MyConnectButton />
             )}
           </CardFooter>
         </Card>

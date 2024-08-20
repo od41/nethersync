@@ -25,6 +25,8 @@ import {
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { CheckCheck } from "lucide-react";
 
 const contractIcon = require("@/assets/send-file.png");
 const packageIcon = require("@/assets/package.png");
@@ -41,6 +43,14 @@ const FormSchema = z.object({
     }
   ),
 });
+
+const features = [
+  "Require recipient to pay before downloading",
+  "Receive payment from stablecoins from any country in the world",
+  "All you need is an email address and crypto wallet",
+  "Decentralized encryption keys (only you and recipient can read files)",
+  "Decentralized storage on IPFS",
+];
 
 export function HomeCard() {
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -62,21 +72,23 @@ export function HomeCard() {
         : "/contracts/create";
     router.push(navigateTo);
   }
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Card>
-          <CardHeader>
-            <CardTitle>What do you want to do?</CardTitle>
-            {/* <CardDescription>Send a file</CardDescription> */}
-          </CardHeader>
-          <CardContent className="grid gap-6">
-            <FormField
+      {/* <form onSubmit={form.handleSubmit(onSubmit)}> */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="leading-8">
+            Send your private files to anyone for free{" "}
+          </CardTitle>
+          {/* <CardDescription>Send a file</CardDescription> */}
+        </CardHeader>
+        <CardContent className="grid gap-6">
+          {/* <FormField
               control={form.control}
               name="userAction"
               render={({ field }) => (
                 <FormItem className="">
-                  {/* <FormLabel>Notify me about...</FormLabel> */}
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -153,15 +165,28 @@ export function HomeCard() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={!isValid} className="w-full">
-              Continue
-            </Button>
-          </CardFooter>
-        </Card>
-      </form>
+            /> */}
+          <ol>
+            {features.map((feat, index) => (
+              <li
+                key={`feat-${index}`}
+                className="flex items-start mb-3 justify-start gap-3"
+              >
+                <span>
+                  <CheckCheck className="w-4 h-4 mt-1 text-green-600" />
+                </span>
+                <span className="text-muted-foreground text-sm">{feat}</span>
+              </li>
+            ))}
+          </ol>
+        </CardContent>
+        <CardFooter>
+          <Button className="w-full" asChild>
+            <Link href="/transfers/send">Send files</Link>
+          </Button>
+        </CardFooter>
+      </Card>
+      {/* </form> */}
     </Form>
   );
 }

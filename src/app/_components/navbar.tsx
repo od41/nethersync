@@ -27,6 +27,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { MyConnectButton } from "@/components/my-connect-button";
 import { useAccount } from "wagmi";
 
 const nsLogo = require("@/assets/logo-light.png");
@@ -132,8 +133,12 @@ export function Navbar() {
         )}
       </div> */}
 
-      <div className="md:flex hidden w-fit px-4 py-2 rounded-md items-center justify-end gap-4 md:ml-auto md:gap-6 bg-background">
-        {links.map(({ title, href }) => (
+      <div className="w-fit">
+        <MyConnectButton />
+      </div>
+
+      <div className="md:hidden hidden w-fit px-4 py-2 rounded-md items-center justify-end gap-4 md:ml-auto md:gap-6 bg-background">
+        {/* {links.map(({ title, href }) => (
           <Link
             key={href}
             href={href}
@@ -147,8 +152,7 @@ export function Navbar() {
           >
             {title}
           </Link>
-        ))}
-        <ConnectButton />
+        ))} */}
         {/* {!user ? (
           <Button onClick={signIn}>Log In</Button>
         ) : (
@@ -172,14 +176,14 @@ export function Navbar() {
           </DropdownMenu>
         )} */}
       </div>
-      <Button variant="outline" asChild>
+      {/* <Button variant="outline" asChild>
         <Link
           href={"/about"}
           className={`transition-colors text-muted-foreground hover:text-primary hover:underline hover:underline-offset-4 shrink-0 md:hidden`}
         >
           About
         </Link>
-      </Button>
+      </Button> */}
     </header>
   );
 }
