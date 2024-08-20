@@ -53,11 +53,11 @@ import Image from "next/image";
 import { handleCopy } from "@/lib/utils";
 
 import { useAccount } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useEthersSigner } from "@/lib/ethers-signer";
 
 import { type SessionSigsMap } from "@lit-protocol/types";
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
+import { MyConnectButton } from "@/components/my-connect-button";
 
 const notFound = require("@/assets/not-found.svg");
 
@@ -443,7 +443,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                       {isDownloading ? "Downloading..." : "Download Files"}
                     </Button>
                   ) : (
-                    <ConnectButton />
+                    <MyConnectButton />
                   )}
                 </>
               )}
