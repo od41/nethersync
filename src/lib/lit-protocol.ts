@@ -11,7 +11,6 @@ import {
   createSiweMessageWithRecaps,
   LitAccessControlConditionResource,
   generateAuthSig,
-  
 } from "@lit-protocol/auth-helpers";
 import { Signer } from "ethers";
 import { SIGNING_URL_ROOT } from "@/client/config";
@@ -109,13 +108,11 @@ const accessControlConditions = [
 export const encryptFile = async (
   file: File,
   litNodeClient: LitJsSdk.LitNodeClient,
-  // signer: Signer,
   sessionSigs: SessionSigsMap
 ) => {
   if (!file || !litNodeClient) return;
 
   try {
-    // const sessionSigs = await getSessionSignatures(litNodeClient, signer);
     const fileResZip = await LitJsSdk.encryptFileAndZipWithMetadata({
       file,
       chain: litProtocolChain,
@@ -128,27 +125,24 @@ export const encryptFile = async (
     const encryptedBlob = new Blob([fileResZip], { type: "text/plain" });
     const encryptedFile = new File([encryptedBlob], file.name);
 
-    await litNodeClient.disconnect();
     return encryptedFile;
   } catch (error) {
     await litNodeClient.disconnect();
     console.error("error encrypting", error);
+  } finally {
+    await litNodeClient.disconnect();
   }
 };
 
 export const decryptFile = async (
   encryptedFile: File | Blob,
   litNodeClient: LitJsSdk.LitNodeClient,
-  signer: Signer
+  sessionSigs: SessionSigsMap
 ) => {
   if (!encryptedFile || !litNodeClient) return;
+  console.log("decrypt-sessin-sigs", sessionSigs);
 
   try {
-    console.log("encryptedFile", encryptedFile);
-    console.log("signer", signer);
-    const signerInJSON = JSON.stringify(signer);
-    const sessionSigs = await getSessionSignatures(litNodeClient, signer);
-
     const decryptedFileResponse = await LitJsSdk.decryptZipFileWithMetadata({
       file: encryptedFile,
       sessionSigs,
@@ -161,12 +155,12 @@ export const decryptFile = async (
       type: "application/octet-stream",
     });
 
-    await litNodeClient.disconnect();
-
     return decryptedBlob;
   } catch (error) {
     await litNodeClient.disconnect();
     console.error("error decrypting", error);
+  } finally {
+    await litNodeClient.disconnect();
   }
 };
 

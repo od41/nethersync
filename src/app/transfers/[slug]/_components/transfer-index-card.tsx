@@ -27,7 +27,11 @@ import {
 } from "lucide-react";
 import { handlePayApi, handleConfirmPaymentApi } from "@/api";
 import { useToast } from "@/components/ui/use-toast";
-import { initLitClient, decryptFile } from "@/lib/lit-protocol";
+import {
+  initLitClient,
+  decryptFile,
+  getSessionSignatures,
+} from "@/lib/lit-protocol";
 
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -52,6 +56,9 @@ import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useEthersSigner } from "@/lib/ethers-signer";
 
+import { type SessionSigsMap } from "@lit-protocol/types";
+import * as LitJsSdk from "@lit-protocol/lit-node-client";
+
 const notFound = require("@/assets/not-found.svg");
 
 export function TransferIndexCard({ slug }: { slug: string }) {
@@ -74,14 +81,15 @@ export function TransferIndexCard({ slug }: { slug: string }) {
     queryFn: () => getTransfer(slug),
   });
 
-  const myDecryptFile = async (encryptedFile: File | Blob) => {
-    // init litnodeclient
-    const litNodeClient = await initLitClient();
-
+  const myDecryptFile = async (
+    encryptedFile: File | Blob,
+    litNodeClient: LitJsSdk.LitNodeClient,
+    sessionSigs: SessionSigsMap
+  ) => {
     const decryptedResult = await decryptFile(
       encryptedFile,
       litNodeClient!,
-      signer as Signer
+      sessionSigs
     );
 
     if (!decryptedResult) {
@@ -95,6 +103,14 @@ export function TransferIndexCard({ slug }: { slug: string }) {
     const zip = new JSZip();
     let isFailed = false;
 
+    // initiate lit client
+    const litNodeClient = await initLitClient();
+    // initiate session
+    const sessionSigs = await getSessionSignatures(
+      litNodeClient!,
+      signer as Signer
+    );
+
     for (const file of encryptedFiles) {
       try {
         // Fetch the encrypted file from IPFS
@@ -105,7 +121,11 @@ export function TransferIndexCard({ slug }: { slug: string }) {
         }
 
         // Decrypt the file content
-        const decryptedContent = await myDecryptFile(encryptedFileBlob);
+        const decryptedContent = await myDecryptFile(
+          encryptedFileBlob,
+          litNodeClient!,
+          sessionSigs!
+        );
 
         // Add the decrypted file to the ZIP
         zip.file(file.name, decryptedContent!, { binary: false });
