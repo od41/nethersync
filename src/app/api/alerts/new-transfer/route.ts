@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sendTransferAlert } from "@/lib/emails";
+import { sendTransferAlertToRecipient, sendTransferAlertToSender } from "@/lib/emails";
 import { TransferAlertProps } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
@@ -21,7 +21,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const options: TransferAlertProps = {
+    const senderOptions: TransferAlertProps = {
+      title,
+      sendersEmail:"info@nethersync.xyz",
+      receiversEmail: sendersEmail,
+      downloadLink,
+      message,
+      paymentWalletAddress,
+      paymentAmount,
+    };
+    const receiverOptions: TransferAlertProps = {
       title,
       receiversEmail,
       downloadLink,
@@ -30,7 +39,8 @@ export async function POST(req: NextRequest) {
       paymentWalletAddress,
       paymentAmount,
     };
-    await sendTransferAlert(options);
+    await sendTransferAlertToSender(senderOptions); // send email alert to sender
+    await sendTransferAlertToRecipient(receiverOptions); // send email alert to recipient
     return NextResponse.json(
       {
         message: "success",
