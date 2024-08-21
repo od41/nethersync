@@ -48,8 +48,6 @@ export const getSessionSignatures = async (
     expiration,
     resourceAbilityRequests,
   }: AuthCallbackParams) => {
-    console.log("uri", uri);
-    console.log("SIGNING_URL_ROOT", SIGNING_URL_ROOT);
     // Prepare the SIWE message for signing
     const toSign = await createSiweMessageWithRecaps({
       uri: uri!,
@@ -140,7 +138,6 @@ export const decryptFile = async (
   sessionSigs: SessionSigsMap
 ) => {
   if (!encryptedFile || !litNodeClient) return;
-  console.log("decrypt-sessin-sigs", sessionSigs);
 
   try {
     const decryptedFileResponse = await LitJsSdk.decryptZipFileWithMetadata({
@@ -150,12 +147,9 @@ export const decryptFile = async (
     });
 
     const { decryptedFile, metadata } = decryptedFileResponse!;
+    const decryptedBlob = new Blob([decryptedFile], {type: metadata.type});
 
-    const decryptedBlob = new Blob([decryptedFile], {
-      type: "application/octet-stream",
-    });
-
-    return decryptedBlob;
+    return {file: decryptedBlob, name: metadata.name};
   } catch (error) {
     await litNodeClient.disconnect();
     console.error("error decrypting", error);

@@ -79,6 +79,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
   } = useQuery({
     queryKey: ["transfer", slug],
     queryFn: () => getTransfer(slug),
+    refetchOnWindowFocus: false
   });
 
   const myDecryptFile = async (
@@ -121,14 +122,15 @@ export function TransferIndexCard({ slug }: { slug: string }) {
         }
 
         // Decrypt the file content
-        const decryptedContent = await myDecryptFile(
-          encryptedFileBlob,
-          litNodeClient!,
-          sessionSigs!
-        );
+        const { file: decryptedContent, name: decryptedFileName } =
+          await myDecryptFile(encryptedFileBlob, litNodeClient!, sessionSigs!);
+
+        console.log("zipping file", file.name, decryptedContent);
+
+        console.log("zip object", zip);
 
         // Add the decrypted file to the ZIP
-        zip.file(file.name, decryptedContent!, { binary: false });
+        zip.file(decryptedFileName, decryptedContent!, { binary: false });
       } catch (error) {
         isFailed = true;
         console.error(`Error zipping file ${file.name}:`, error);

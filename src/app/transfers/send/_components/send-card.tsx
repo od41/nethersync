@@ -315,16 +315,29 @@ export function SendCard() {
         await startUploadSession(encryptFilesResponse, SEND_FILE_ID);
 
       const uploadTimestamp = Date.now();
+      // files metadata
+      let filesInNs: NSFile[] = [];
 
       // Step 2: Upload files to signed URLs
       await Promise.all(
-        signedUrls.map((signedUrl: any, currentUpload: number) =>
-          uploadFileToSignedUrl(
+        signedUrls.map((signedUrl: any, currentUpload: number) => {
+          filesInNs.push({
+            id: signedUrl.fileUuid,
+            path: signedUrl.path,
+            name: data.files[currentUpload].name,
+            format: data.files[currentUpload].type,
+            uploadTimestamp,
+            size: `${String(
+              (data.files[currentUpload].size / 1000000).toFixed(2)
+            )} MB`, // TODO change to save in kb or bytes
+            receiver: data.receiversEmail,
+          });
+          return uploadFileToSignedUrl(
             signedUrl.url,
             encryptFilesResponse[currentUpload],
             currentUpload
-          )
-        )
+          );
+        })
       );
 
       // Step 3: End the upload session
@@ -334,17 +347,6 @@ export function SendCard() {
         (total, file) => total + file.size,
         0
       );
-      const filesInNs: NSFile[] = data.files.map((item, index) => {
-        return {
-          id: signedUrls[index].fileUuid,
-          path: signedUrls[index].path,
-          name: item.name,
-          format: item.type,
-          uploadTimestamp,
-          size: `${String((item.size / 1000000).toFixed(2))} MB`,
-          receiver: data.receiversEmail,
-        };
-      });
 
       const transferMetaData: NSTransfer = {
         id: SEND_FILE_ID,
@@ -365,7 +367,7 @@ export function SendCard() {
       // Step 4: Store file data in db
       await storeMetadata(transferMetaData);
 
-      // Step 5: Send email alert to receiver
+      // Step 5: Send email alerts to sender and receiver
       const sendAlertUrl = `/api/alerts/new-transfer`;
       const alertOptions = {
         receiversEmail: data.receiversEmail,
