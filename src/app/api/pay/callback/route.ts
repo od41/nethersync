@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  Timestamp,
-} from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
 import firebaseAdmin from "@/lib/firebase-admin";
 import { verify } from "./_lib/verify";
 
@@ -64,16 +62,18 @@ export async function POST(req: NextRequest) {
   } = processedData;
 
   try {
-    const TX_COLLECTION = 'transactions';
+    const TX_COLLECTION = "transactions";
     const txDocRef = firebaseAdmin.collection(TX_COLLECTION).doc(payId!);
     const txDoc = await txDocRef.get();
 
     const TRANSFERS_COLLECTION = "transfers";
-    const transferDocRef =firebaseAdmin.collection(TRANSFERS_COLLECTION).doc(payId!);
-    
+    const transferDocRef = firebaseAdmin
+      .collection(TRANSFERS_COLLECTION)
+      .doc(payId!);
+
     // check if exists
     if (txDoc.exists) {
-      const txDocData = txDoc.data() as any // TODO: Add correct types
+      const txDocData = txDoc.data() as any; // TODO: Add correct types
       const isComplete = txDocData.isComplete;
       if (isComplete) {
         // if for some reason it's already recorded as complete but CryptAPI is still pinging the endpoint for that transaction
@@ -118,6 +118,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json("ok", { status: 200 });
     }
   } catch (error) {
+    console.log("callback error>>", error);
     return NextResponse.json(
       { message: "Something went wrong" },
       { status: 406 }

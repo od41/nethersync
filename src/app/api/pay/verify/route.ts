@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-// @ts-ignore
-const CryptAPI = require("@cryptapi/api");
-import { BASE_URL, NETHERSYNC_FEES_WALLET_ADDRESS } from "@/server/config";
-import { AllowedCurrency } from "@/lib/types";
+import { cryptInstance } from "../_lib/crypt-instance";
 
 export async function POST(req: NextRequest) {
   const { amount, payId, receiverWalletAddress } = await req.json();
@@ -16,20 +13,11 @@ export async function POST(req: NextRequest) {
 
   try {
     // Create a new CryptAPI instance
-    const callbackUrl = `${BASE_URL}/api/pay/callback`;
-    const NSParams = {
-      pay_id: payId,
-    };
-    const cryptapiParams = { post: 1 };
-
-    const ca = new CryptAPI(
-      AllowedCurrency.POLYGON_USDT,
-      receiverWalletAddress,
-      callbackUrl,
-      NSParams,
-      cryptapiParams
-    );
+    const params = { payId, amount, receiverWalletAddress };
+    const { ca } = await cryptInstance(params);
     const logs = await ca.checkLogs();
+    console.log("logs", logs);
+
     if (!logs.callbacks) {
       return NextResponse.json(
         { message: "Transaction pending" },
@@ -38,6 +26,8 @@ export async function POST(req: NextRequest) {
     }
     const result: string = logs.callbacks[0].result; // result of the latest callback
     const timeStamp = logs.callbacks[0].last_update;
+
+    // TODO: update the transfer record on firebase, if the payment has been verified and the hasPaid is still false
 
     // Respond with details about that payment
     return NextResponse.json(

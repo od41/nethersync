@@ -200,11 +200,16 @@ export function TransferIndexCard({ slug }: { slug: string }) {
         amount,
         transfer?.walletAddress!
       );
-      console.log("verify res", res);
-      if (res.result === "done") {
+      console.log(
+        "verify res",
+        res,
+        res.data.result,
+        res.data.result === "done"
+      );
+      if (res.data.result === "done") {
         toast({
-          title: "payment complete",
-          description: `Payment verified on ${res.timeStamp}`,
+          title: "Payment complete",
+          description: `Verified on ${res.data.timeStamp}`,
         });
         setPendingPayConfirmation(false);
         console.log("payment confirmed");

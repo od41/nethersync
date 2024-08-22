@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-// @ts-ignore
-const CryptAPI = require("@cryptapi/api");
-import {
-  BASE_URL,
-  NETHERSYNC_FEES_WALLET_ADDRESS,
-  NS_FEES_PERCENTAGE,
-  MINIMUM_AMOUNT_USD,
-} from "@/server/config";
-import { AllowedCurrency } from "@/lib/types";
+import { MINIMUM_AMOUNT_USD } from "@/server/config";
+import { cryptInstance } from "../_lib/crypt-instance";
 
 export async function POST(req: NextRequest) {
   const { amount, payId, receiverWalletAddress } = await req.json();
+
+  // TODO: include access control conditions for security
 
   if (!payId || !amount) {
     return NextResponse.json(
@@ -28,26 +23,10 @@ export async function POST(req: NextRequest) {
 
   try {
     // Create a new CryptAPI instance
-    const callbackUrl = `${BASE_URL}/api/pay/callback`;
-    const nsParams = {
-      pay_id: payId,
-    };
-    const NSFees = Number(NS_FEES_PERCENTAGE) * amount;
-    const receiversPercentage = 1.0 - Number(NS_FEES_PERCENTAGE); // 90 percent
-    const totalAmount = amount + NSFees;
-    const cryptapiParams = { post: 1 };
-    const recipientAddresses = `${NS_FEES_PERCENTAGE}@${NETHERSYNC_FEES_WALLET_ADDRESS}|${receiversPercentage}@${receiverWalletAddress}`;
-    // const ca = new CryptAPI(coin, myAddress, callbackUrl, params, cryptapiParams)
-    const ca = new CryptAPI(
-      AllowedCurrency.POLYGON_USDT,
-      recipientAddresses,
-      callbackUrl,
-      nsParams,
-      cryptapiParams
+    const params = { payId, amount, receiverWalletAddress };
+    const { totalAmount, NSFees, fees, qrCode, address } = await cryptInstance(
+      params
     );
-    const address = await ca.getAddress();
-    const qrCode = await ca.getQrcode(totalAmount);
-    const fees = await CryptAPI.getEstimate(AllowedCurrency.POLYGON_USDT);
     // Respond with the payment details
     return NextResponse.json(
       {
