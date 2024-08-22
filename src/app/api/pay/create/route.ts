@@ -5,6 +5,7 @@ import {
   BASE_URL,
   NETHERSYNC_FEES_WALLET_ADDRESS,
   NS_FEES_PERCENTAGE,
+  MINIMUM_AMOUNT_USD,
 } from "@/server/config";
 import { AllowedCurrency } from "@/lib/types";
 
@@ -18,19 +19,28 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (amount < MINIMUM_AMOUNT_USD) {
+    return NextResponse.json(
+      { message: `Amount is too small, send $${MINIMUM_AMOUNT_USD} or more` },
+      { status: 400 }
+    );
+  }
+
   try {
     // Create a new CryptAPI instance
     const callbackUrl = `${BASE_URL}/api/pay/callback`;
     const nsParams = {
       pay_id: payId,
     };
-    const NSFees = NS_FEES_PERCENTAGE * amount;
+    const NSFees = Number(NS_FEES_PERCENTAGE) * amount;
+    const receiversPercentage = 1.0 - Number(NS_FEES_PERCENTAGE); // 90 percent
     const totalAmount = amount + NSFees;
     const cryptapiParams = { post: 1 };
+    const recipientAddresses = `${NS_FEES_PERCENTAGE}@${NETHERSYNC_FEES_WALLET_ADDRESS}|${receiversPercentage}@${receiverWalletAddress}`;
     // const ca = new CryptAPI(coin, myAddress, callbackUrl, params, cryptapiParams)
     const ca = new CryptAPI(
       AllowedCurrency.POLYGON_USDT,
-      receiverWalletAddress,
+      recipientAddresses,
       callbackUrl,
       nsParams,
       cryptapiParams

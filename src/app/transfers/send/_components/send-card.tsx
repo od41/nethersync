@@ -651,7 +651,7 @@ export function SendCard() {
                         render={({ field }) => (
                           <FormItem className="space-y-1">
                             <FormLabel className="text-xs">
-                              Amount (USDC or USDT)
+                              Amount (USDT)
                             </FormLabel>
                             <FormControl>
                               <Input

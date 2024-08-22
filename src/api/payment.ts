@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export async function handlePayApi(
+export async function handleCreatePayment(
   payId: string,
   payAmount: number,
   receiverWalletAddress: string

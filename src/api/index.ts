@@ -1,1 +1,1 @@
-export { handlePayApi, handleConfirmPaymentApi } from "./payment";
+export { handleCreatePayment, handleConfirmPaymentApi } from "./payment";

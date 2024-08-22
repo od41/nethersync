@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  collection,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
   Timestamp,
 } from "firebase/firestore";
-import { firestore } from "@/lib/firebase";
+import firebaseAdmin from "@/lib/firebase-admin";
 import { verify } from "./_lib/verify";
 
 function convertToJSON(queryString: string): Record<string, any> {
@@ -69,36 +64,37 @@ export async function POST(req: NextRequest) {
   } = processedData;
 
   try {
-    const TX_COLLECTION = collection(firestore, "transactions");
-    const txDocRef = doc(TX_COLLECTION, payId!);
-    const txDoc = await getDoc(txDocRef);
+    const TX_COLLECTION = 'transactions';
+    const txDocRef = firebaseAdmin.collection(TX_COLLECTION).doc(payId!);
+    const txDoc = await txDocRef.get();
 
-    const TRANSFERS_COLLECTION = collection(firestore, "transfers");
-    const transferDocRef = doc(TRANSFERS_COLLECTION, payId!);
-    const transferDoc = await getDoc(transferDocRef);
+    const TRANSFERS_COLLECTION = "transfers";
+    const transferDocRef =firebaseAdmin.collection(TRANSFERS_COLLECTION).doc(payId!);
+    
     // check if exists
-    if (txDoc.exists()) {
-      const isComplete = txDoc.data().isComplete;
+    if (txDoc.exists) {
+      const txDocData = txDoc.data() as any // TODO: Add correct types
+      const isComplete = txDocData.isComplete;
       if (isComplete) {
         // if for some reason it's already recorded as complete but CryptAPI is still pinging the endpoint for that transaction
         return NextResponse.json("ok", { status: 200 });
       } else if (Number(pending) === 0) {
         // if isComplete is false, and status is true, then update
         // update transaction record
-        await updateDoc(txDocRef, {
+        await txDocRef.update({
           isComplete: true,
           timeStamp: Timestamp.now(),
         });
 
         // update transfer record
-        await updateDoc(transferDocRef, {
+        await transferDocRef.update({
           paymentStatus: true,
           payTimeStamp: Timestamp.now(),
         });
         return NextResponse.json("ok", { status: 200 });
       }
     } else {
-      await setDoc(txDocRef, {
+      await txDocRef.set({
         isComplete: true,
         pending: false,
         timeStamp: Timestamp.now(),
@@ -115,7 +111,7 @@ export async function POST(req: NextRequest) {
       });
 
       // update transfer record
-      await updateDoc(transferDocRef, {
+      await transferDocRef.update({
         paymentStatus: true,
         payTimeStamp: Timestamp.now(),
       });

@@ -25,7 +25,7 @@ import {
   CopyCheck,
   CheckCheckIcon,
 } from "lucide-react";
-import { handlePayApi, handleConfirmPaymentApi } from "@/api";
+import { handleCreatePayment, handleConfirmPaymentApi } from "@/api";
 import { useToast } from "@/components/ui/use-toast";
 import {
   initLitClient,
@@ -79,7 +79,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
   } = useQuery({
     queryKey: ["transfer", slug],
     queryFn: () => getTransfer(slug),
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   });
 
   const myDecryptFile = async (
@@ -124,10 +124,6 @@ export function TransferIndexCard({ slug }: { slug: string }) {
         // Decrypt the file content
         const { file: decryptedContent, name: decryptedFileName } =
           await myDecryptFile(encryptedFileBlob, litNodeClient!, sessionSigs!);
-
-        console.log("zipping file", file.name, decryptedContent);
-
-        console.log("zip object", zip);
 
         // Add the decrypted file to the ZIP
         zip.file(decryptedFileName, decryptedContent!, { binary: false });
@@ -182,7 +178,11 @@ export function TransferIndexCard({ slug }: { slug: string }) {
 
     const amount = Number(transfer?.paymentAmount);
     const payId = transfer?.id;
-    const res = await handlePayApi(payId, amount, transfer?.walletAddress!);
+    const res = await handleCreatePayment(
+      payId,
+      amount,
+      transfer?.walletAddress!
+    );
     if (res) {
       setPayDetails(res.data);
     }
@@ -192,20 +192,26 @@ export function TransferIndexCard({ slug }: { slug: string }) {
     if (!transfer?.id || transfer?.paymentStatus) return;
     setPendingPayConfirmation(true);
 
-    const amount = Number(transfer?.paymentAmount);
-    const payId = transfer?.id;
-    const res: any = await handleConfirmPaymentApi(
-      payId,
-      amount,
-      transfer?.walletAddress!
-    );
-    if (res.result === "done") {
-      toast({
-        title: "payment complete",
-        description: `Payment verified on ${res.timeStamp}`,
-      });
+    try {
+      const amount = Number(transfer?.paymentAmount);
+      const payId = transfer?.id;
+      const res: any = await handleConfirmPaymentApi(
+        payId,
+        amount,
+        transfer?.walletAddress!
+      );
+      console.log("verify res", res);
+      if (res.result === "done") {
+        toast({
+          title: "payment complete",
+          description: `Payment verified on ${res.timeStamp}`,
+        });
+        setPendingPayConfirmation(false);
+        console.log("payment confirmed");
+      }
+    } catch (error) {
+      console.log("payment confirmation failed");
       setPendingPayConfirmation(false);
-      console.log("payment confirmed");
     }
   }
 
@@ -303,7 +309,7 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                   ) : (
                     <>
                       <DialogContent className="sm:max-w-md">
-                        {payDetails ? (
+                        {!payDetails ? (
                           <div className="flex items-center space-x-2">
                             <>
                               <div className="flex items-center justify-center w-full py-3 gap-1">
