@@ -5,6 +5,7 @@ import {
   FIREBASE_ADMIN_PROJECT_ID,
 } from "@/server/config";
 import * as admin from "firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 
 if (!admin.apps.length) {
   try {
@@ -20,4 +21,6 @@ if (!admin.apps.length) {
   }
 }
 
-export default admin.firestore();
+// export default admin.firestore();
+const adminDB = getFirestore();
+export default adminDB;

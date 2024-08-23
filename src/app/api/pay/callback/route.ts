@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Timestamp } from "firebase/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 import firebaseAdmin from "@/lib/firebase-admin";
 import { verify } from "./_lib/verify";
 
@@ -118,7 +118,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json("ok", { status: 200 });
     }
   } catch (error) {
-    console.log("callback error>>", error);
     return NextResponse.json(
       { message: "Something went wrong" },
       { status: 406 }
