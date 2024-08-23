@@ -27,8 +27,8 @@ export async function POST(req: NextRequest) {
     const result: string = logs.callbacks[0].result; // result of the latest callback
     const timeStamp = logs.callbacks[0].last_update;
 
-    // TODO: update the transfer record on firebase, if the payment has been verified and the hasPaid is still false
-
+    // TODO: update the transfer record on firebase, if the payment has been verified and the hasPaid is still false0
+ 0
     // Respond with details about that payment
     return NextResponse.json(
       { message: "success", result, timeStamp },
