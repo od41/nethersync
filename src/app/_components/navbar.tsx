@@ -31,6 +31,7 @@ import { MyConnectButton } from "@/components/my-connect-button";
 import { useAccount } from "wagmi";
 
 const nsLogo = require("@/assets/logo-light.png");
+const nsLogoLight = require("@/assets/logo-dark.png");
 
 const links: { title: string; href: string; description: string }[] = [
   // {
@@ -50,7 +51,7 @@ const links: { title: string; href: string; description: string }[] = [
   },
 ];
 
-export function Navbar() {
+export function Navbar({ isDark = true }: { isDark?: boolean }) {
   const currentPath = usePathname();
   const { signIn, user } = useContext(AuthContext);
   const { isConnected } = useAccount();
@@ -94,7 +95,7 @@ export function Navbar() {
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
           <Image
-            src={nsLogo.default.src}
+            src={isDark ? nsLogoLight.default.src : nsLogo.default.src}
             // className="h-6 w-6"
             alt="nethersync logo"
             width={140}

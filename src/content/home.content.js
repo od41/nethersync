@@ -6,6 +6,7 @@ const data = {
       "Journalists",
       "Freelancers",
       "Privacy maxis",
+      "You",
     ],
     description:
       "Only you and your recipient can read files sent, with end-to-end encryption",
@@ -16,22 +17,22 @@ const data = {
       {
         heading: "Secure file sharing",
         description: "Lorem ipsum dolor sit amet",
-        photo: "/images/pngs/chat_home/feature-1.png",
+        photo: "/icons/vpn-illustration.svg",
       },
       {
         heading: "Built in escrow",
         description: "Lorem ipsum dolor sit amet",
-        photo: "/images/pngs/chat_home/feature-2.png",
+        photo: "/icons/leo-illustration.svg",
       },
       {
         heading: "No sign up required",
         description: "Lorem ipsum dolor sit amet",
-        photo: "/images/pngs/chat_home/feature-3.png",
+        photo: "/icons/vpn-illustration.svg",
       },
     ],
   },
   faqs: {
-    heading: "Frequently asked questions",
+    heading: "FAQs",
     list: [
       {
         question: "What is NetherSync?",
@@ -52,18 +53,18 @@ const data = {
     ],
   },
   footer: {
-    cta: "Send files now",
+    cta: "Secure file transfer and escrow payments",
     socials: [
       {
         label: "x",
         icon: "/icons/x.svg",
         link: "https://x.com/nethersync",
       },
-      {
-        label: "reddit",
-        icon: "/icons/reddit.svg",
-        link: "https://www.reddit.com/user/nethersync/",
-      },
+      // {
+      //   label: "reddit",
+      //   icon: "/icons/reddit.svg",
+      //   link: "https://www.reddit.com/user/nethersync/",
+      // },
     ],
   },
 };
