@@ -53,7 +53,7 @@ const data = {
     ],
   },
   footer: {
-    cta: "Secure file transfer and escrow payments",
+    cta: "Secure file transfer & escrow payments",
     socials: [
       {
         label: "x",

@@ -2,7 +2,13 @@
 
 import React, { useContext } from "react";
 import Link from "next/link";
-import { CircleUser, Menu, Package2, Search } from "lucide-react";
+import {
+  ArrowRightIcon,
+  CircleUser,
+  Menu,
+  Package2,
+  Search,
+} from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -33,6 +39,11 @@ import { useAccount } from "wagmi";
 const nsLogo = require("@/assets/logo-light.png");
 const nsLogoLight = require("@/assets/logo-dark.png");
 
+interface NavbarProps {
+  isDark?: boolean;
+  showCTA?: boolean;
+}
+
 const links: { title: string; href: string; description: string }[] = [
   // {
   //   title: "Transfers",
@@ -51,7 +62,7 @@ const links: { title: string; href: string; description: string }[] = [
   },
 ];
 
-export function Navbar({ isDark = true }: { isDark?: boolean }) {
+export function Navbar({ isDark = true, showCTA = false }: NavbarProps) {
   const currentPath = usePathname();
   const { signIn, user } = useContext(AuthContext);
   const { isConnected } = useAccount();
@@ -135,7 +146,15 @@ export function Navbar({ isDark = true }: { isDark?: boolean }) {
       </div> */}
 
       <div className="w-fit">
-        <MyConnectButton />
+        {showCTA ? (
+          <Button variant="outline" className="" asChild>
+            <Link href={"/transfers/send"}>
+              Send Files <ArrowRightIcon className="ml-2 w-4 h-4" />
+            </Link>
+          </Button>
+        ) : (
+          <MyConnectButton />
+        )}
       </div>
 
       <div className="md:hidden hidden w-fit px-4 py-2 rounded-md items-center justify-end gap-4 md:ml-auto md:gap-6 bg-background">

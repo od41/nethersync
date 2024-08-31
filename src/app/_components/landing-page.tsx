@@ -18,29 +18,31 @@ export function LandingPage() {
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="">
-        <div className="container mx-auto md:px-10 pb-12 flex flex-col">
-          <div className="text-2xl md:text-6xl mb-5 font-display w-2/3 ">
-            <LoopingSentences sentences={content.hero.cta_hook} delay={4} />
+        <FadeIn direction="down" initialDelay={0.05} once>
+          <div className="container mx-auto md:px-10 pb-12 pt-6 md:pt-0 flex flex-col">
+            <div className="text-4xl md:text-6xl mb-5 font-display w-full lg:w-2/3 ">
+              <LoopingSentences sentences={content.hero.cta_hook} delay={4} />
+            </div>
+            <div className="w-full max-w-md">
+              <Button size="lg" className="" asChild>
+                <Link href={"/transfers/send"}>
+                  Send Files <ArrowRightIcon className="ml-2 w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
           </div>
-          <div className="w-full max-w-md">
-            <Button size="lg" className="" asChild>
-              <Link href={"/transfers/send"}>
-                Send Files <ArrowRightIcon className="ml-2 w-4 h-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
+        </FadeIn>
 
         {/* Benefits Section */}
         <div className="container mx-auto md:px-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10">
             {content.features.list.map((feature, index) => (
               <FadeIn
                 key={`${index}-index`}
                 initialDelay={(index + 1) * 0.2}
                 once
               >
-                <div className="w-full h-full bg-muted p-7 pb-0 rounded-xl border-0 border-white">
+                <div className="w-full h-full bg-muted p-5 lg:p-7 pb-0 rounded-xl border-0 border-white">
                   <div className="text-xl md:text-3xl font-display mb-2">
                     {feature.heading}
                   </div>
@@ -64,10 +66,12 @@ export function LandingPage() {
 
       {/* FAQs Section */}
       <section className="py-24">
-        <div className="container mx-auto max-w-3xl px-4">
-          <h2 className="text-5xl font-normal font-display text-center mb-12">
-            {content.faqs.heading}
-          </h2>
+        <div className="container mx-auto max-w-3xl md:px-10">
+          <FadeIn initialDelay={0.2} once>
+            <h2 className="text-5xl font-normal font-display text-center mb-12">
+              {content.faqs.heading}
+            </h2>
+          </FadeIn>
           <div className="flex flex-col justify-start w-full gap-4">
             {content.faqs.list.map((item, index) => {
               return (
@@ -96,9 +100,12 @@ export function LandingPage() {
       {/* Footer */}
       <footer className=" text-white py-12">
         <div className="container mx-auto md:px-10">
-          <div className="flex justify-between w-full h-full bg-muted px-7 py-14 rounded-xl">
-            <div className="w-full flex flex-col items-start justify-center">
-              <h3 className="text-4xl font-display mb-4">
+          <div className="flex flex-col md:flex-row justify-between w-full h-full bg-muted px-7 py-14 rounded-xl">
+            <FadeIn
+              once
+              className="w-full flex flex-col items-center md:items-start mb-8 md:mb-0 justify-center"
+            >
+              <h3 className="text-3xl md:text-4xl font-display text-center md:text-left mb-4">
                 {content.footer.cta}
               </h3>
               <div className="flex space-x-2">
@@ -108,17 +115,27 @@ export function LandingPage() {
                   </Link>
                 </Button>
               </div>
-            </div>
-            <div className="w-full h-[200px] relative">
+            </FadeIn>
+            {/* <FadeIn initialDelay={0.4} once> */}
+            <FadeIn
+              initialDelay={0.2}
+              once
+              className="w-full h-[200px] relative"
+            >
               <Image
                 src="/icons/leo-illustration.svg"
                 fill={true}
                 className="object-contain"
                 alt="send files with Nethersync illustration"
               />
-            </div>
+            </FadeIn>
+            {/* </FadeIn> */}
           </div>
-          <div className="mt-8 flex items-center justify-between text-center text-muted-foreground">
+          <FadeIn
+            once
+            initialDelay={0.2}
+            className="mt-8 flex items-center justify-between text-center text-muted-foreground"
+          >
             <p>&copy; {new Date().getFullYear()} NetherSync.</p>
             <div className="flex space-x-4">
               {content.footer.socials.map((social, index) => (
@@ -138,7 +155,7 @@ export function LandingPage() {
                 </Link>
               ))}
             </div>
-          </div>
+          </FadeIn>
         </div>
       </footer>
     </div>
