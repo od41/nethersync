@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { FileIcon, FileTextIcon, FileSpreadsheetIcon } from "lucide-react";
-import { FileWithPreview } from "@/app/transfers/send/_components/send-card";
+import { FileWithPreview } from "@/app/(transfers_layout)/transfers/send/_components/send-card";
 
 interface FilePreviewProps {
   file: FileWithPreview;

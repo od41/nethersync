@@ -1,5 +1,5 @@
 import React from "react";
-import { Navbar } from "./navbar";
+import { Navbar } from "@/app/_components/navbar";
 import BackgroundCarousel from "@/components/ui/background-carousel";
 import Image from "next/image";
 
@@ -25,7 +25,7 @@ const CAROUSEL_IMAGES = [
   },
 ];
 
-const DefaultPage = ({ children }: { children: React.ReactNode }) => {
+const TransgersPage = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex min-h-screen w-full h-full flex-col">
       <Navbar />
@@ -51,4 +51,4 @@ const DefaultPage = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default DefaultPage;
+export default TransgersPage;

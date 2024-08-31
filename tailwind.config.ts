@@ -19,11 +19,12 @@ const config = {
     },
     extend: {
       maxHeight: {
-        '50vh': '50vh',
-        '75vh': '75vh',
+        "50vh": "50vh",
+        "75vh": "75vh",
       },
       backgroundImage: {
-        'radial-dark-transparent': 'radial-gradient(circle, #4a4a4a, rgba(74, 74, 74, 0))',
+        "radial-dark-transparent":
+          "radial-gradient(circle, #4a4a4a, rgba(74, 74, 74, 0))",
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
@@ -71,12 +72,20 @@ const config = {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
         },
         "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
+          },
         },
       },
       animation: {
