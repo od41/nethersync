@@ -6,7 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Upload, Shield, Zap, Globe, ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon } from "lucide-react";
 import content from "@/content/home.content";
 import { LoopingSentences } from "@/components/looping-sentences";
 import Image from "next/image";
@@ -42,14 +42,16 @@ export function LandingPage() {
                 initialDelay={(index + 1) * 0.2}
                 once
               >
-                <div className="w-full h-full bg-muted p-5 lg:p-7 pb-0 rounded-xl border-0 border-white">
-                  <div className="text-xl md:text-3xl font-display mb-2">
-                    {feature.heading}
+                <div className="w-full h-full bg-muted p-5 pb-2 lg:p-7 lg:pb-4 rounded-xl flex flex-col justify-between">
+                  <div className="">
+                    <div className="text-xl md:text-2xl font-display mb-2">
+                      {feature.heading}
+                    </div>
+                    <div className="text-base md:text-lg text-muted-foreground mb-2 font-normal">
+                      {feature.description}
+                    </div>
                   </div>
-                  <div className="text-md md:text-lg text-muted-foreground mb-2 font-normal">
-                    {feature.description}
-                  </div>
-                  <div className="w-full h-[200px] relative">
+                  <div className="w-full h-[300px] relative">
                     <Image
                       src={feature.photo}
                       fill={true}
@@ -80,8 +82,8 @@ export function LandingPage() {
                   initialDelay={(index + 1) * 0.07}
                   once
                 >
-                  <Accordion type="single" collapsible>
-                    <AccordionItem value={`${index}-item`}>
+                  <Accordion type="single" defaultValue="faq-0" collapsible>
+                    <AccordionItem value={`faq-${index}`}>
                       <AccordionTrigger className="text-2xl font-display md:text-2xl [&[data-state=open]]:pb-3">
                         {item.question}
                       </AccordionTrigger>
@@ -120,10 +122,10 @@ export function LandingPage() {
             <FadeIn
               initialDelay={0.2}
               once
-              className="w-full h-[200px] relative"
+              className="w-full h-[320px] relative"
             >
               <Image
-                src="/icons/leo-illustration.svg"
+                src="/icons/access-illustration.svg"
                 fill={true}
                 className="object-contain"
                 alt="send files with Nethersync illustration"
