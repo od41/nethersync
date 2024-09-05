@@ -77,6 +77,7 @@ export enum AllowedCurrency {
   POLYGON_USDT = "polygon_usdt",
   POLYGON_USDC = "polygon_usdc",
   BASE_USDC = "base_usdc",
+  BASE_USDT = "base_usdt",
 }
 
 export type TransactionProps = {

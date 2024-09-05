@@ -98,7 +98,7 @@ export const PreviewSheet = () => {
             {completedTransfer!.isPaid && (
               <div>
                 <h4 className="text-lg uppercase">
-                  {completedTransfer!.paymentAmount} USDC
+                  {completedTransfer!.paymentAmount} USDT
                 </h4>
                 <p className="text-xs uppercase text-muted-foreground">
                   payment amount

@@ -87,7 +87,7 @@ export const SingleTransferSheet = ({ file }: { file: NSFile }) => {
 
               <div>
                 <h4 className="text-lg lowercase">
-                  {selectedFile!.paymentAmount} USDC
+                  {selectedFile!.paymentAmount} USDT
                 </h4>
                 <p className="text-xs uppercase text-muted-foreground">
                   payment amount

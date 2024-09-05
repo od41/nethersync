@@ -655,7 +655,7 @@ export function SendCard() {
                             </FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="0 USDC"
+                                placeholder="0 USDT"
                                 type="number"
                                 {...field}
                               />
