@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
         txidOut: txid_out,
         confirmations,
         gasFees: fee_coin,
-        NSFees: 0, // TODO
+        NSFees: 0, // TODO: add actual fees amount
         price,
       });
 

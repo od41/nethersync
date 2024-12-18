@@ -27,8 +27,8 @@ const defaultData: TransfersContextProps = {
 };
 
 export const TransferContext = createContext(defaultData);
-// TODO: Refactor this to be Transfers provider
-export function FilesProvider({ children }: { children: React.ReactNode }) {
+
+export function TransfersProvider({ children }: { children: React.ReactNode }) {
   const [file, setFile] = useState<any>(undefined);
   const [files, setFiles] = useState<NSFile[]>();
   const [transfer, setTransfer] = useState<NSTransfer>();
