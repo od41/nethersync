@@ -56,9 +56,12 @@ import {
 import { type SessionSigsMap } from "@lit-protocol/types";
 import { useEthersSigner } from "@/lib/ethers-signer";
 
-import { useAccount } from "wagmi";
+import {
+  useAccount,
+} from "@particle-network/connectkit";
 import { FilePreview } from "@/components/ui/file-preview";
-import { MyConnectButton } from "@/components/my-connect-button";
+// import { ConnectButton } from "@/components/my-connect-button";
+import { ConnectButton } from "@particle-network/connectkit";
 
 const successImage = require("@/assets/successful-send.png");
 
@@ -706,7 +709,7 @@ export function SendCard() {
                 )}
               </Button>
             ) : (
-              <MyConnectButton />
+              <ConnectButton />
             )}
           </CardFooter>
         </Card>

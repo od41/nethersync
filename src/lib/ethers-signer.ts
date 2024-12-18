@@ -1,7 +1,7 @@
 import { providers } from "ethers";
 import { useMemo } from "react";
 import type { Account, Chain, Client, Transport } from "viem";
-import { Config, useConnectorClient } from "wagmi";
+import { usePublicClient } from "@particle-network/connectkit";
 
 export function clientToSigner(client: Client<Transport, Chain, Account>) {
   const { account, chain, transport } = client;
@@ -11,12 +11,16 @@ export function clientToSigner(client: Client<Transport, Chain, Account>) {
     ensAddress: chain.contracts?.ensRegistry?.address,
   };
   const provider = new providers.Web3Provider(transport, network);
+  return provider;
   const signer = provider.getSigner(account.address);
   return signer;
 }
 
-/** Hook to convert a Viem Client to an ethers.js Signer. */
+/** Hook to convert a Particle Connect Client to an ethers.js Signer. */
 export function useEthersSigner({ chainId }: { chainId?: number } = {}) {
-  const { data: client } = useConnectorClient<Config>({ chainId });
-  return useMemo(() => (client ? clientToSigner(client) : undefined), [client]);
+  const walletClient = usePublicClient(); // TODO: fix this type
+  return useMemo(
+    () => (walletClient ? clientToSigner(walletClient as any) : undefined),
+    [walletClient]
+  );
 }

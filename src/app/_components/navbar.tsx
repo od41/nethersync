@@ -32,9 +32,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { MyConnectButton } from "@/components/my-connect-button";
-import { useAccount } from "wagmi";
+import { useAccount, ConnectButton } from "@particle-network/connectkit";
 
 const nsLogo = require("@/assets/logo-light.png");
 const nsLogoLight = require("@/assets/logo-dark.png");
@@ -153,7 +152,7 @@ export function Navbar({ isDark = true, showCTA = false }: NavbarProps) {
             </Link>
           </Button>
         ) : (
-          <MyConnectButton />
+          <ConnectButton />
         )}
       </div>
 

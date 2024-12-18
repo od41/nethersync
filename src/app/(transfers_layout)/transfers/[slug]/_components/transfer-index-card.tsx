@@ -52,7 +52,9 @@ import {
 import Image from "next/image";
 import { handleCopy } from "@/lib/utils";
 
-import { useAccount } from "wagmi";
+import {
+  useAccount,
+} from "@particle-network/connectkit";
 import { useEthersSigner } from "@/lib/ethers-signer";
 
 import { type SessionSigsMap } from "@lit-protocol/types";

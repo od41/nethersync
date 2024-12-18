@@ -1,4 +1,4 @@
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { ConnectButton } from "@particle-network/connectkit";
 import { Button } from "./ui/button";
 export const MyConnectButton = () => {
   return (
