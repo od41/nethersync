@@ -3,8 +3,16 @@
 import { ConnectKitProvider, createConfig } from "@particle-network/connectkit";
 import { authWalletConnectors } from "@particle-network/connectkit/auth";
 import { baseSepolia } from "@particle-network/connectkit/chains";
-import { evmWalletConnectors, injected as evmInjected, walletConnect, coinbaseWallet } from '@particle-network/connectkit/evm';
-import { solanaWalletConnectors, injected as solanaInjected } from '@particle-network/connectkit/solana';
+import {
+  evmWalletConnectors,
+  injected as evmInjected,
+  walletConnect,
+  coinbaseWallet,
+} from "@particle-network/connectkit/evm";
+import {
+  solanaWalletConnectors,
+  injected as solanaInjected,
+} from "@particle-network/connectkit/solana";
 import { wallet, EntryPosition } from "@particle-network/connectkit/wallet";
 import { aa } from "@particle-network/connectkit/aa";
 import React from "react";
@@ -47,10 +55,9 @@ const config = createConfig({
     evmWalletConnectors({
       metadata: { name: "NetherSync", icon: "", description: "", url: "" },
       connectorFns: [
-        evmInjected({ target: 'metaMask' }),
+        evmInjected({ target: "metaMask" }),
         coinbaseWallet({ appName: "NetherSync", appLogoUrl: "" }),
-    ],
-
+      ],
     }),
     authWalletConnectors({
       // Optional, configure this if you're using social logins
@@ -86,8 +93,6 @@ const temp = aa({
   name: "BICONOMY",
   version: "2.0.0",
 });
-
-console.log("particl connect biconomy", temp(config as any));
 
 // Export ConnectKitProvider to be used within your index or layout file (or use createConfig directly within those files).
 export const ParticleConnectkit = ({ children }: React.PropsWithChildren) => {
