@@ -55,12 +55,10 @@ import {
 } from "@/lib/lit-protocol";
 import { type SessionSigsMap } from "@lit-protocol/types";
 // import { useEthersSigner } from "@/lib/ethers-signer";
-import { useEthereum } from '@particle-network/authkit';
+import { useEthereum } from "@particle-network/authkit";
 import { ethers } from "ethers";
 
-import {
-  useAccount,
-} from "@particle-network/connectkit";
+import { useAccount } from "@particle-network/connectkit";
 import { FilePreview } from "@/components/ui/file-preview";
 // import { ConnectButton } from "@/components/my-connect-button";
 // import { ConnectButton } from "@particle-network/connectkit";
@@ -145,7 +143,7 @@ export function SendCard() {
   const [currentUploadIndex, setCurrentUploadIndex] = useState(1);
 
   const { toast } = useToast();
-  
+
   const { provider } = useEthereum();
   const ethersProvider = new ethers.providers.Web3Provider(provider, "any");
   const signer = ethersProvider.getSigner();
@@ -464,263 +462,285 @@ export function SendCard() {
     return <SuccessDisplay />;
   }
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Card className="max-h-[84vh] min-h-[40vh] justify-center md:max-h-[70vh]">
+    <>
+      {isConnected ? (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <Card className="max-h-[84vh] min-h-[40vh] justify-center md:max-h-[70vh]">
+              <CardHeader>
+                <CardTitle>Upload files</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="max-h-[480px] h-[23rem] md:h-[18rem]">
+                  <div className="grid gap-3">
+                    <div>
+                      <Controller
+                        name="files"
+                        control={form.control}
+                        render={({ field: { onChange } }) => (
+                          <div
+                            onDrop={(event) => handleDrop(event, onChange)}
+                            onDragOver={(e) => e.preventDefault()}
+                            className="flex p-4 w-full items-center justify-center rounded-md border border-dashed hover:border-primary hover:bg-muted"
+                          >
+                            <input
+                              type="file"
+                              multiple
+                              onChange={(event) =>
+                                handleFileChange(event, onChange)
+                              }
+                              style={{ display: "none" }}
+                              id="fileInput"
+                            />
+                            <label
+                              htmlFor="fileInput"
+                              className="cursor-pointer flex items-center text-sm text-muted-foreground"
+                            >
+                              <div className="pr-4">
+                                <Upload className="h-4 w-4 text-primary" />
+                                <span className="sr-only">Upload files</span>
+                              </div>
+                              Upload files here
+                            </label>
+                          </div>
+                        )}
+                      />
+
+                      {formErrors.files && (
+                        <p className="text-[0.8rem] font-medium text-destructive mt-1">
+                          {formErrors.files.message}
+                        </p>
+                      )}
+
+                      {uploadedFiles.length > 0 && (
+                        <ScrollArea className="w-full whitespace-nowrap rounded-md my-4">
+                          <div
+                            className="grid overflow-x-auto gap-2"
+                            style={{
+                              gridAutoColumns: "70px",
+                              gridAutoFlow: "column",
+                            }}
+                          >
+                            {uploadedFiles.map((file, index) => (
+                              <div key={index} className="my-2 relative ">
+                                {isSubmitting ||
+                                  (false && ( // TODO progress bar is buggy
+                                    <>
+                                      <Progress
+                                        value={
+                                          file.progress ? file.progress : 0
+                                        }
+                                        className="w-[80%] mx-auto absolute bottom-2 left-1.5 z-10"
+                                      />
+                                      <div className="aspect-square w-full h-full bg-background absolute top-0 left-0 opacity-40"></div>
+                                    </>
+                                  ))}
+                                {file.uploadComplete && (
+                                  <div className="bottom-2 w-5 h-5 absolute -top-1.5 -right-1.5 rounded-full p-0.5 flex items-center justify-center bg-primary">
+                                    <Check className="h-3 w-3" />
+                                    {/* <div className="aspect-square w-full h-full bg-background absolute top-0 left-0 opacity-40"></div> */}
+                                  </div>
+                                )}
+                                {file && <FilePreview file={file} />}
+                                {!isSubmitting && !sendStatus && (
+                                  <Button
+                                    variant="destructive"
+                                    size="icon"
+                                    className="absolute -top-1.5 -right-1.5 rounded-full p-0.5 h-5 w-5"
+                                    onClick={() => handleRemoveFile(index)}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                )}
+                                <p className="truncate w-[40px] text-xs text-muted-foreground">
+                                  {file.name}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                          <ScrollBar orientation="horizontal" />
+                        </ScrollArea>
+                      )}
+                    </div>
+
+                    {!isSubmitting && (
+                      <>
+                        <FormField
+                          control={form.control}
+                          name="receiversEmail"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel className="text-xs">
+                                Receiver&apos;s Email
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="other-email@mail.com"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="sendersEmail"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel className="text-xs">
+                                Sender&apos;s Email
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="your-email@mail.com"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="title"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel className="text-xs">Title</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Final files..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="message"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1">
+                              <FormLabel className="text-xs">Message</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="A note about the file(s)"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="isPaid"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel>Request payment</FormLabel>
+                                <FormDescription>
+                                  Receiver pays before downloading
+                                </FormDescription>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+
+                        {isPaid && (
+                          <FormField
+                            control={form.control}
+                            name="paymentAmount"
+                            render={({ field }) => (
+                              <FormItem className="space-y-1">
+                                <FormLabel className="text-xs">
+                                  Amount (USDT)
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="0 USDT"
+                                    type="number"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+
+                        {isPaid && (
+                          <FormField
+                            control={form.control}
+                            name="walletAddress"
+                            render={({ field }) => (
+                              <FormItem className="space-y-1">
+                                <FormLabel className="text-xs">
+                                  Wallet Address
+                                </FormLabel>
+                                <FormControl>
+                                  <Input placeholder="0x000...123" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                      </>
+                    )}
+                    <ScrollBar />
+                  </div>
+                </ScrollArea>
+              </CardContent>
+              <CardFooter>
+                {isConnected ? (
+                  <Button
+                    type="submit"
+                    disabled={!isValid || isSubmitting}
+                    className="w-full"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                        Sending...{" "}
+                        {`${currentUploadIndex} of ${uploadedFiles.length}`}
+                      </>
+                    ) : (
+                      <>Send Files</>
+                    )}
+                  </Button>
+                ) : (
+                  <MyConnectButton />
+                )}
+              </CardFooter>
+            </Card>
+          </form>
+        </Form>
+      ) : (
+        <Card className="max-h-[84vh] justify-center md:max-h-[70vh]">
           <CardHeader>
-            <CardTitle>Upload files</CardTitle>
+            <CardTitle>Login or Signup</CardTitle>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="max-h-[480px] h-[23rem] md:h-[18rem]">
-              <div className="grid gap-3">
-                <div>
-                  <Controller
-                    name="files"
-                    control={form.control}
-                    render={({ field: { onChange } }) => (
-                      <div
-                        onDrop={(event) => handleDrop(event, onChange)}
-                        onDragOver={(e) => e.preventDefault()}
-                        className="flex p-4 w-full items-center justify-center rounded-md border border-dashed hover:border-primary hover:bg-muted"
-                      >
-                        <input
-                          type="file"
-                          multiple
-                          onChange={(event) =>
-                            handleFileChange(event, onChange)
-                          }
-                          style={{ display: "none" }}
-                          id="fileInput"
-                        />
-                        <label
-                          htmlFor="fileInput"
-                          className="cursor-pointer flex items-center text-sm text-muted-foreground"
-                        >
-                          <div className="pr-4">
-                            <Upload className="h-4 w-4 text-primary" />
-                            <span className="sr-only">Upload files</span>
-                          </div>
-                          Upload files here
-                        </label>
-                      </div>
-                    )}
-                  />
-
-                  {formErrors.files && (
-                    <p className="text-[0.8rem] font-medium text-destructive mt-1">
-                      {formErrors.files.message}
-                    </p>
-                  )}
-
-                  {uploadedFiles.length > 0 && (
-                    <ScrollArea className="w-full whitespace-nowrap rounded-md my-4">
-                      <div
-                        className="grid overflow-x-auto gap-2"
-                        style={{
-                          gridAutoColumns: "70px",
-                          gridAutoFlow: "column",
-                        }}
-                      >
-                        {uploadedFiles.map((file, index) => (
-                          <div key={index} className="my-2 relative ">
-                            {isSubmitting ||
-                              (false && ( // TODO progress bar is buggy
-                                <>
-                                  <Progress
-                                    value={file.progress ? file.progress : 0}
-                                    className="w-[80%] mx-auto absolute bottom-2 left-1.5 z-10"
-                                  />
-                                  <div className="aspect-square w-full h-full bg-background absolute top-0 left-0 opacity-40"></div>
-                                </>
-                              ))}
-                            {file.uploadComplete && (
-                              <div className="bottom-2 w-5 h-5 absolute -top-1.5 -right-1.5 rounded-full p-0.5 flex items-center justify-center bg-primary">
-                                <Check className="h-3 w-3" />
-                                {/* <div className="aspect-square w-full h-full bg-background absolute top-0 left-0 opacity-40"></div> */}
-                              </div>
-                            )}
-                            {file && <FilePreview file={file} />}
-                            {!isSubmitting && !sendStatus && (
-                              <Button
-                                variant="destructive"
-                                size="icon"
-                                className="absolute -top-1.5 -right-1.5 rounded-full p-0.5 h-5 w-5"
-                                onClick={() => handleRemoveFile(index)}
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            )}
-                            <p className="truncate w-[40px] text-xs text-muted-foreground">
-                              {file.name}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                      <ScrollBar orientation="horizontal" />
-                    </ScrollArea>
-                  )}
-                </div>
-
-                {!isSubmitting && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="receiversEmail"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel className="text-xs">
-                            Receiver&apos;s Email
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="other-email@mail.com"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="sendersEmail"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel className="text-xs">
-                            Sender&apos;s Email
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="your-email@mail.com"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel className="text-xs">Title</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Final files..." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="message"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel className="text-xs">Message</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="A note about the file(s)"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="isPaid"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>Request payment</FormLabel>
-                            <FormDescription>
-                              Receiver pays before downloading
-                            </FormDescription>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-
-                    {isPaid && (
-                      <FormField
-                        control={form.control}
-                        name="paymentAmount"
-                        render={({ field }) => (
-                          <FormItem className="space-y-1">
-                            <FormLabel className="text-xs">
-                              Amount (USDT)
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="0 USDT"
-                                type="number"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-
-                    {isPaid && (
-                      <FormField
-                        control={form.control}
-                        name="walletAddress"
-                        render={({ field }) => (
-                          <FormItem className="space-y-1">
-                            <FormLabel className="text-xs">
-                              Wallet Address
-                            </FormLabel>
-                            <FormControl>
-                              <Input placeholder="0x000...123" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                  </>
-                )}
-                <ScrollBar />
-              </div>
-            </ScrollArea>
+            <p className="text-center text-muted-foreground mb-4">
+              Please login to continue
+            </p>
+            <MyConnectButton />
           </CardContent>
-          <CardFooter>
-            {isConnected ? (
-              <Button
-                type="submit"
-                disabled={!isValid || isSubmitting}
-                className="w-full"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...{" "}
-                    {`${currentUploadIndex} of ${uploadedFiles.length}`}
-                  </>
-                ) : (
-                  <>Send Files</>
-                )}
-              </Button>
-            ) : (
-              <MyConnectButton />
-            )}
-          </CardFooter>
         </Card>
-      </form>
-    </Form>
+      )}
+    </>
   );
 }
 

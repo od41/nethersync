@@ -6,8 +6,14 @@ import Image from "next/image";
 const photo1 = require("@/assets/bg-photos-1.jpg");
 const photo2 = require("@/assets/bg-photos-2.jpg");
 const photo3 = require("@/assets/bg-photos-3.jpg");
+const photo4 = require("@/assets/bg-photos-4.jpg");
 
 const CAROUSEL_IMAGES = [
+  {
+    src: String(photo4.default.src),
+    owner: "Freepik",
+    ownerLink: "https://www.freepik.com",
+  },
   {
     src: String(photo1.default.src),
     owner: "Aleksandar Pasaric",
@@ -29,7 +35,7 @@ const TransgersPage = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex min-h-screen w-full h-full flex-col">
       <Navbar />
-      <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-5">
+      <main className="grid flex-1 items-start gap-0 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-5">
         <div className="col-span-3 md:ml-8 mb-12">{children}</div>
       </main>
       {/* <BackgroundCarousel images={CAROUSEL_IMAGES} /> */}
@@ -43,7 +49,8 @@ const TransgersPage = ({ children }: { children: React.ReactNode }) => {
           // layout="fill"
           objectFit="cover"
           // objectPosition="fixed"
-          className="w-full h-full fixed"
+          // flip the image
+          className="w-full h-full fixed -scale-x-100"
           alt={`Slide ${CAROUSEL_IMAGES[0].owner}`}
         />
       </div>

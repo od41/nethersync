@@ -61,3 +61,12 @@
 .sc-enMaOJ {
   width: 100% !important;
 }
+
+/* Hide the chain selector elements */
+.sc-dFqmTM.da-dget {
+  display: none;
+}
+
+.sc-jdwyG.IrDoj {
+  display: none;
+}
