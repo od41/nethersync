@@ -33,14 +33,14 @@ const config = createConfig({
     splitEmailAndPhone: false, // Optional, displays Email and phone number entry separately
     collapseWalletList: false, // Optional, hide wallet list behind a button
     hideContinueButton: false, // Optional, remove "Continue" button underneath Email or phone number entry
-    connectorsOrder: ["email", "phone", "social", "wallet"], //  Optional, sort connection methods (index 0 will be placed at the top)
+    connectorsOrder: ["email", "social", "wallet"], //  Optional, sort connection methods (index 0 will be placed at the top)
     language: "en-US", // Optional, also supported ja-JP, zh-CN, zh-TW, and ko-KR
     mode: "light", // Optional, changes theme between light, dark, or auto (which will change it based on system settings)
     theme: {
       "--pcm-accent-color": "#ff4d4f",
       // ... other options
     },
-    logo: "https://...",
+    // logo: "https://...",
     filterCountryCallingCode: (countries) => {
       // Optional, whitelist or blacklist phone numbers from specific countries
       return countries.filter((item) => item === "US");
@@ -48,12 +48,12 @@ const config = createConfig({
   },
   walletConnectors: [
     evmWalletConnectors({
-      metadata: { name: "My App", icon: "", description: "", url: "" }, // Optional, this is Metadata used by WalletConnect and Coinbase
+      metadata: { name: "NetherSync", icon: "", description: "", url: "" }, // Optional, this is Metadata used by WalletConnect and Coinbase
       walletConnectProjectId: "Replace with your WalletConnect Project ID", // optional, retrieved from https://cloud.walletconnect.com
     }),
     authWalletConnectors({
       // Optional, configure this if you're using social logins
-      authTypes: ["email", "google", "apple", "twitter", "github"], // Optional, restricts the types of social logins supported
+      authTypes: ["email", "google"], // Optional, restricts the types of social logins supported
       fiatCoin: "USD", // Optional, also supports CNY, JPY, HKD, INR, and KRW
       promptSettingConfig: {
         // Optional, changes the frequency in which the user is asked to set a master or payment password
@@ -71,7 +71,7 @@ const config = createConfig({
     wallet({
       // Optional configurations for the attached embedded wallet modal
       entryPosition: EntryPosition.BR, // Alters the position in which the modal button appears upon login
-      visible: true, // Dictates whether or not the wallet modal is included/visible or not
+      visible: false, // Dictates whether or not the wallet modal is included/visible or not
     }),
     // aa({
     //   name: "BICONOMY",

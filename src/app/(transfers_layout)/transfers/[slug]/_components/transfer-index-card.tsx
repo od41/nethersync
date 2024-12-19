@@ -57,7 +57,6 @@ import { handleCopy } from "@/lib/utils";
 import {
   useAccount,
 } from "@particle-network/connectkit";
-import { useEthersSigner } from "@/lib/ethers-signer";
 
 import { type SessionSigsMap } from "@lit-protocol/types";
 import * as LitJsSdk from "@lit-protocol/lit-node-client";

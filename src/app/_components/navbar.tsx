@@ -152,7 +152,7 @@ export function Navbar({ isDark = true, showCTA = false }: NavbarProps) {
             </Link>
           </Button>
         ) : (
-          <ConnectButton />
+          <MyConnectButton />
         )}
       </div>
 
