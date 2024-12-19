@@ -54,7 +54,9 @@ import {
   getSessionSignatures,
 } from "@/lib/lit-protocol";
 import { type SessionSigsMap } from "@lit-protocol/types";
-import { useEthersSigner } from "@/lib/ethers-signer";
+// import { useEthersSigner } from "@/lib/ethers-signer";
+import { useEthereum } from '@particle-network/authkit';
+import { ethers } from "ethers";
 
 import {
   useAccount,
@@ -142,7 +144,10 @@ export function SendCard() {
   const [currentUploadIndex, setCurrentUploadIndex] = useState(1);
 
   const { toast } = useToast();
-  const signer = useEthersSigner();
+  
+  const { provider } = useEthereum();
+  const ethersProvider = new ethers.providers.Web3Provider(provider, "any");
+  const signer = ethersProvider.getSigner();
 
   const isPaid = watch("isPaid", false);
 
