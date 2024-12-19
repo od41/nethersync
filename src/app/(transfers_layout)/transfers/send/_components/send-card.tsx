@@ -63,7 +63,8 @@ import {
 } from "@particle-network/connectkit";
 import { FilePreview } from "@/components/ui/file-preview";
 // import { ConnectButton } from "@/components/my-connect-button";
-import { ConnectButton } from "@particle-network/connectkit";
+// import { ConnectButton } from "@particle-network/connectkit";
+import { MyConnectButton } from "@/components/my-connect-button";
 
 const successImage = require("@/assets/successful-send.png");
 
@@ -714,7 +715,7 @@ export function SendCard() {
                 )}
               </Button>
             ) : (
-              <ConnectButton />
+              <MyConnectButton />
             )}
           </CardFooter>
         </Card>
