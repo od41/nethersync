@@ -54,9 +54,7 @@ import {
 import Image from "next/image";
 import { handleCopy } from "@/lib/utils";
 
-import {
-  useAccount,
-} from "@particle-network/connectkit";
+import { useAccount } from "@particle-network/connectkit";
 
 import { type SessionSigsMap } from "@lit-protocol/types";
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
@@ -233,6 +231,22 @@ export function TransferIndexCard({ slug }: { slug: string }) {
           <Loader2 className="mr-2 h-8 w-8 text-primary animate-spin" />
           <CardTitle className="text-lg">Fetching transfer details</CardTitle>
         </CardHeader>
+      </Card>
+    );
+  }
+
+  if (!isConnected) {
+    return (
+      <Card className="max-h-[84vh] justify-center md:max-h-[70vh]">
+        <CardHeader>
+          <CardTitle>Login</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-muted-foreground mb-4">
+            Please login to download your files
+          </p>
+          <MyConnectButton />
+        </CardContent>
       </Card>
     );
   }
@@ -452,18 +466,14 @@ export function TransferIndexCard({ slug }: { slug: string }) {
                 </Dialog>
               ) : (
                 <>
-                  {isConnected ? (
-                    <Button
-                      type="submit"
-                      onClick={decryptAndDownloadAsZip}
-                      disabled={isDownloading}
-                      className="w-full"
-                    >
-                      {isDownloading ? "Downloading..." : "Download Files"}
-                    </Button>
-                  ) : (
-                    <MyConnectButton />
-                  )}
+                  <Button
+                    type="submit"
+                    onClick={decryptAndDownloadAsZip}
+                    disabled={isDownloading}
+                    className="w-full"
+                  >
+                    {isDownloading ? "Downloading..." : "Download Files"}
+                  </Button>
                 </>
               )}
             </CardFooter>

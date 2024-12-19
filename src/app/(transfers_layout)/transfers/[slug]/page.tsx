@@ -3,7 +3,7 @@ import { TransferIndexCard } from "./_components/transfer-index-card";
 
 const FilesIndexPage = ({ params }: { params: { slug: string } }) => {
   return (
-    <div className="max-w-[360px]">
+    <div className="max-w-[440px] md:w-[360px]">
       <TransferIndexCard slug={params.slug} />
     </div>
   );
