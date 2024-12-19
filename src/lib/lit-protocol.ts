@@ -1,6 +1,7 @@
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
-import { useAccount, useSignMessage } from "wagmi";
-
+import {
+  useAccount,
+} from "@particle-network/connectkit";
 import { LitNetwork } from "@lit-protocol/constants";
 import { uint8arrayToString } from "@lit-protocol/uint8arrays";
 

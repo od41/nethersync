@@ -32,6 +32,8 @@ import {
   decryptFile,
   getSessionSignatures,
 } from "@/lib/lit-protocol";
+import { ethers } from "ethers";
+import { useEthereum } from "@particle-network/authkit";
 
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -52,8 +54,9 @@ import {
 import Image from "next/image";
 import { handleCopy } from "@/lib/utils";
 
-import { useAccount } from "wagmi";
-import { useEthersSigner } from "@/lib/ethers-signer";
+import {
+  useAccount,
+} from "@particle-network/connectkit";
 
 import { type SessionSigsMap } from "@lit-protocol/types";
 import * as LitJsSdk from "@lit-protocol/lit-node-client";
@@ -69,8 +72,11 @@ export function TransferIndexCard({ slug }: { slug: string }) {
   const [payDetails, setPayDetails] = useState<any>();
   const [isCopied, setIsCopied] = useState(false);
   const { isConnected } = useAccount();
-  const signer = useEthersSigner();
   const [isDownloading, setIsDownloading] = useState(false);
+
+  const { provider } = useEthereum();
+  const ethersProvider = new ethers.providers.Web3Provider(provider, "any");
+  const signer = ethersProvider.getSigner();
 
   const {
     data: transfer,

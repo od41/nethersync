@@ -3,7 +3,10 @@ import React from "react";
 import { TransfersProvider } from "./transfers";
 import { ContractsProvider } from "./contracts";
 import AuthProvider from "./auth";
-import { Providers as Web3Provider } from "./providers";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ParticleConnectkit } from "./wallet";
+
+const queryClient = new QueryClient();
 
 export const ApplicationProvider = ({
   children,
@@ -11,12 +14,14 @@ export const ApplicationProvider = ({
   children: React.ReactNode;
 }) => {
   return (
-    <AuthProvider>
-      <Web3Provider>
-        <ContractsProvider>
-          <TransfersProvider>{children}</TransfersProvider>
-        </ContractsProvider>
-      </Web3Provider>
-    </AuthProvider>
+    <ParticleConnectkit>
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <ContractsProvider>
+            <TransfersProvider>{children}</TransfersProvider>
+          </ContractsProvider>
+        </QueryClientProvider>
+      </AuthProvider>
+    </ParticleConnectkit>
   );
 };
