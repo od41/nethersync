@@ -242,8 +242,8 @@ export function TransferIndexCard({ slug }: { slug: string }) {
           <CardTitle>Login</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-center text-muted-foreground mb-4">
-            Please login to download your files
+          <p className="text-muted-foreground mb-4">
+            Login to decrypt files & send payments.
           </p>
           <MyConnectButton />
         </CardContent>

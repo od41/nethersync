@@ -392,8 +392,8 @@ export function SendCard() {
       setActiveTransferDisplay(transferMetaData);
       setSendStatus(true);
       toast({
-        title: "Success 😄",
-        description: `The files are on their way to ${data.receiversEmail}.`,
+        title: "Synced Successfully ✅",
+        description: `Your files have been sent to ${data.receiversEmail}.`,
       });
     } catch (error) {
       toast({
@@ -681,21 +681,29 @@ export function SendCard() {
                         )}
 
                         {isPaid && (
-                          <FormField
-                            control={form.control}
-                            name="walletAddress"
-                            render={({ field }) => (
-                              <FormItem className="space-y-1">
-                                <FormLabel className="text-xs">
-                                  Wallet Address
-                                </FormLabel>
-                                <FormControl>
-                                  <Input placeholder="0x000...123" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                          <div>
+                            <FormField
+                              control={form.control}
+                              name="walletAddress"
+                              render={({ field }) => (
+                                <FormItem className="space-y-1">
+                                  <FormLabel className="text-xs">
+                                    Wallet Address
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="0x000...123"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <span className="text-sm text-muted-foreground -mt-1">
+                              Crypto wallet address to receive your payment
+                            </span>
+                          </div>
                         )}
                       </>
                     )}
@@ -730,11 +738,11 @@ export function SendCard() {
       ) : (
         <Card className="max-h-[84vh] justify-center md:max-h-[70vh]">
           <CardHeader>
-            <CardTitle>Login or Signup</CardTitle>
+            <CardTitle>Login</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-center text-muted-foreground mb-4">
-              Please login to continue
+            <p className="text-muted-foreground mb-4">
+              Login to enable secure file sharing & optional payments.
             </p>
             <MyConnectButton />
           </CardContent>
@@ -749,6 +757,12 @@ function SuccessDisplay() {
   const sendMoreFiles = () => {
     router.refresh();
   };
+
+  const tweet =
+    "🔐 Just shared my files on @nethersync - receiver pays, then downloads. It's private file sharing that pays in 2 clicks 💫 #Web3 #creators";
+  const encodedTweetMessage = encodeURIComponent(tweet);
+  const tweetUrl = `https://x.com/intent/tweet?text=${encodedTweetMessage}`;
+
   return (
     <>
       <Card className="max-h-[84vh] min-h-[40vh] justify-center md:max-h-[70vh]">
@@ -764,13 +778,16 @@ function SuccessDisplay() {
         </CardHeader>
         <CardContent className="grid gap-3">
           Your files are on their way 🚀.
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => window.open(tweetUrl, "_blank")}
+          >
+            Tweet about it
+          </Button>
         </CardContent>
         <CardFooter className="grid gap-3">
           <PreviewSheet />
-          {/* // TODO fix the refresh to send more files */}
-          {/* <Button className="w-full" onClick={sendMoreFiles}>
-            Send more files
-          </Button> */}
         </CardFooter>
       </Card>
     </>
