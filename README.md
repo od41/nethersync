@@ -2,29 +2,7 @@
 
 ## Overview
 
-NETHERSYNC is a decentralized escrow, file sharing and dispute resolution platform to enhance trust between digital freelancers & their clients
-
-## Sponsor Tools
-
-1. Apillon API: integrated with storage through Apillon's API, which in turn uses CRUST.
-
-2. Kilt DIDs: authentication & user accounts enabled decentralized IDs through the Kilt service available on Apillon.
-
-3. Phala: encryption/decryrption of files.
-
-
-## Benefits
-
-### ...for clients
-- Thwarts fraud attempts.
-- Confidence in the security and integrity of shared files.
-- Dispute resolution mechanism ensures fair handling of disagreements.
-- Simplified and secure process for receiving and reviewing work.
-
-### ...for freelancers
-- Always get paid
-- Saving you the agony of chasing invoices
-- Escrow service puts you in the driver’s seat to ensure you receive full value for your efforts.
+NETHERSYNC is a secure file sharing and escrow payments
 
 [![Live demo icon](/images/live-demo.png)](https://nethersync.xyz/)
 
@@ -32,10 +10,6 @@ NETHERSYNC is a decentralized escrow, file sharing and dispute resolution platfo
 
 ## Architecture
 ![Screenshot of a send on NETHERSYNC](/images/)
-
-## Contracts
-
-Main: [0x000....000](https://) (Testnet)
 
 ## Usage
 
@@ -48,7 +22,7 @@ To install NETHERSYNC, follow these steps:
 3. Install dependencies: `yarn`
 4. Start the application: `yarn dev`
 
-## Contributors
+## Builder
 
 - [Odafe](https://twitter.com/elder41_)
 
