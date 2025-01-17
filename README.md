@@ -2,14 +2,14 @@
 
 ## Overview
 
-NETHERSYNC is a secure file sharing and escrow payments
+NETHERSYNC V1 is a secure file sharing and escrow payments tool
 
 [![Live demo icon](/images/live-demo.png)](https://nethersync.xyz/)
 
 [Video Demo](https://etun.short.gy/nethersync-encode-demo)
 
-## Architecture
-![Screenshot of a send on NETHERSYNC](/images/)
+<!-- ## Architecture
+![Screenshot of a send on NETHERSYNC](/images/) -->
 
 ## Usage
 
@@ -24,12 +24,9 @@ To install NETHERSYNC, follow these steps:
 
 ## Builder
 
-- [Odafe](https://twitter.com/elder41_)
+- [Dafe](https://twitter.com/elder41_)
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
 
-## Acknowledgements
-
-We would like to thank the organizers of W3TRANSFER hackathon for providing us with the opportunity to work on this project.
